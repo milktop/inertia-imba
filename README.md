@@ -562,7 +562,7 @@ preserve correct native behavior and direct styling.
 - While processing, the button disables itself and carries `data-loading`.
   Completion, validation failure, or cancellation clears that temporary state.
   An explicit `disabled=true` remains effective until you change it.
-- The instance exposes read-only `processing` and `cancel()`. Removal cancels
+- The instance exposes bindable `processing` and `cancel()`. Removal cancels
   its pending request. Cancellation cannot undo work already accepted by Rails.
 - `replace`, `preserveState`, `preserveScroll`, `only`, `except`, and `headers`
   are supported. `preserveState` defaults to true for actions.
@@ -587,3 +587,40 @@ Rails handles the toggle and redirects back; updated page props change the label
 `LinkButton` sets `type="button"` internally and does not require a form. The
 fixture tests both directions, persistence after refresh, and keeping a draft and
 filter while the request runs.
+
+
+### Binding processing and handling validation errors
+
+Imba supports named bindings. Use `bind:processing`, not bare `bind` (which binds
+`data`, the request payload):
+
+```imba
+import { LinkButton } from '@inertiajs/imba'
+
+export default tag ExamplePage
+    updating = false
+    message = ''
+
+    def showError event
+        message = event.detail.errors.name
+
+    <self>
+        <LinkButton href="/example" bind:processing=updating @error=showError>
+            updating ? 'Saving…' : 'Save'
+        if message
+            <p> message
+```
+
+`processing` is an output for parent UI. It becomes false after completion,
+validation failure, cancellation, or removal. Although Imba bindings are two-way,
+writing that variable does not start/cancel a request or bypass the internal
+loading and duplicate-click guards. Use a separate variable for each button.
+
+`@error` receives a bubbling CustomEvent whose `detail.errors` contains Inertia
+validation errors. Values may be strings or arrays, depending on the server.
+It does not retain an errors object on the button or change normal page errors.
+Network failures and server exceptions keep Inertia's default handling; they are
+not emitted as validation errors. Use `useForm` for full form/error state.
+
+Try the Bound processing and errors section on About → Action buttons. CSS-only
+loading styling can continue to use `[data-loading]` without a binding.

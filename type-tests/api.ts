@@ -123,3 +123,9 @@ actionButton.method = 'get'
 actionButton.prefetch = true
 // @ts-expect-error native confirmation takes a message, not a callback
 actionButton.confirm = () => true
+
+// Processing is a bindable output, not a command to start or finish a request.
+actionButton.processing = false
+const validationEvent = new CustomEvent<import('@inertiajs/imba').LinkButtonErrorDetail>('error', { detail: { errors: { name: ['Required'] } } })
+const actionErrors: Record<string, string | string[]> = validationEvent.detail.errors
+void actionErrors

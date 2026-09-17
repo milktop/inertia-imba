@@ -165,3 +165,25 @@ test('button actions recover when visits are vetoed or throw before sending', as
   assert.throws(() => broken.follow({ preventDefault() {} }), /failed/)
   assert.equal(broken.state.processing, false)
 })
+
+test('button validation errors are reported without keeping state, and late errors are ignored', async () => {
+  const { createLinkAction } = await import('../src/link.js')
+  const { anchor } = click()
+  const requests = []
+  const errors = []
+  const action = createLinkAction(anchor, () => ({ href: '/students' }), {
+    visit: (_url, options) => { requests.push(options); options.onCancelToken({ cancel() {} }) },
+  }, () => {}, value => errors.push(value))
+  action.follow({ preventDefault() {} })
+  const failure = { name: ['is required'] }
+  requests[0].onError(failure)
+  assert.deepEqual(errors, [failure])
+  requests[0].onFinish()
+  assert.equal(action.state.processing, false)
+  action.follow({ preventDefault() {} })
+  requests[0].onError({ name: 'stale' })
+  assert.equal(errors.length, 1)
+  action.destroy()
+  requests[1].onError({ name: 'removed' })
+  assert.equal(errors.length, 1)
+})

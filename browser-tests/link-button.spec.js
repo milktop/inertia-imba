@@ -119,3 +119,64 @@ test('cancelling a pending action clears loading and allows retry', async ({ pag
   await button.click()
   await expect(page.getByTestId('last-action')).toHaveText('POST: Created')
 })
+
+test('named processing binding updates parent content without exposing request control', async ({ page }) => {
+  const button = page.getByRole('button', { name: 'Bound action', exact: true })
+  const output = page.getByTestId('bound-processing')
+  await expect(output).toHaveText('Updating: false')
+  await expect(button).toHaveText('Save example')
+  let release
+  const gate = new Promise(resolve => { release = resolve })
+  let requests = 0
+  await page.route('**/action_examples', async route => {
+    if (route.request().method() === 'POST') { requests++; await gate }
+    await route.continue()
+  })
+  await button.click()
+  await expect(output).toHaveText('Updating: true')
+  await expect(button).toHaveText('Saving…')
+  await expect(button).toBeDisabled()
+  // Imba bindings are two-way, but a parent write must not unlock the request.
+  await button.evaluate(node => { node.processing = false })
+  await button.dispatchEvent('click')
+  await expect(button).toBeDisabled()
+  await expect(button).toHaveAttribute('data-loading', '')
+  expect(requests).toBe(1)
+  release()
+  await expect(page.getByTestId('last-action')).toHaveText('POST: Bound action')
+  await expect(output).toHaveText('Updating: false')
+  await expect(button).toHaveText('Save example')
+  await expect(button).toBeEnabled()
+})
+
+test('processing binding resets on cancellation and removal; error event exposes validation messages', async ({ page }) => {
+  const button = page.getByRole('button', { name: 'Bound action', exact: true })
+  let release
+  const gate = new Promise(resolve => { release = resolve })
+  const handled = []
+  await page.route('**/action_examples', route => {
+    const handling = (async () => {
+      if (route.request().method() === 'POST') { await gate; await route.abort() }
+      else await route.continue()
+    })()
+    handled.push(handling)
+    return handling
+  })
+  await button.click()
+  await expect(page.getByTestId('bound-processing')).toHaveText('Updating: true')
+  await button.evaluate(node => node.cancel())
+  await expect(page.getByTestId('bound-processing')).toHaveText('Updating: false')
+  await button.click()
+  await expect(page.getByTestId('bound-processing')).toHaveText('Updating: true')
+  await button.evaluate(node => node.remove())
+  await expect(page.getByTestId('bound-processing')).toHaveText('Updating: false')
+  release()
+  await Promise.all(handled)
+  await page.unroute('**/action_examples')
+  await page.goto('/action_examples')
+
+  await page.getByRole('button', { name: 'Handled validation example', exact: true }).click()
+  await expect(page.getByTestId('action-error')).toHaveText("Button event: can't be blank")
+  await expect(page.getByRole('alert')).toHaveText("can't be blank")
+  await expect(page.getByRole('button', { name: 'Handled validation example', exact: true })).toBeEnabled()
+})

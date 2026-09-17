@@ -62,7 +62,7 @@ export function actionUrl(button, href) {
   return ['http:', 'https:'].includes(url.protocol) && url.origin === current.origin ? url.href : null
 }
 
-export function createLinkAction(button, settings, router, changed = () => {}) {
+export function createLinkAction(button, settings, router, changed = () => {}, reportError = () => {}) {
   const state = { processing: false }
   let disposed = false
   let token
@@ -96,6 +96,9 @@ export function createLinkAction(button, settings, router, changed = () => {}) {
           data: config.data ?? {},
           preserveState: config.options?.preserveState ?? true,
           onCancelToken: value => { token = value; if (disposed) value.cancel() },
+          onError: errors => {
+            if (!disposed && request === generation) reportError(errors)
+          },
           onFinish: () => finish(request),
         })
         // Inertia's global before event can veto a visit without onFinish.

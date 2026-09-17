@@ -7,6 +7,7 @@ export tag LinkButton < button
 	prop method = 'post'
 	prop data = {}
 	prop confirm
+	prop processing = false
 	prop replace = false
 	prop preserveState = true
 	prop preserveScroll = false
@@ -25,12 +26,12 @@ export tag LinkButton < button
 		disabledByUser = !!value
 		syncState!
 
-	get processing
-		action and action.state.processing or false
-
 	def syncState
+		# Publish an output for bind:processing; internal request state stays authoritative.
+		let active = action and action.state.processing or false
+		processing = active
 		toggleAttribute('disabled', disabled)
-		toggleAttribute('data-loading', processing)
+		toggleAttribute('data-loading', active)
 		imba.commit!
 
 	def mount
@@ -40,12 +41,15 @@ export tag LinkButton < button
 				disabled: disabledByUser
 				options: { replace, preserveState, preserveScroll, only, except, headers }
 			}
-		action = createLinkAction(self, settings, router, do syncState!)
+		let changed = do syncState!
+		let reportError = do(errors) emit('error', { errors })
+		action = createLinkAction(self, settings, router, changed, reportError)
 		syncState!
 
 	def unmount
 		action.destroy! if action
 		action = null
+		syncState!
 
 	def follow event
 		action.follow(event) if action

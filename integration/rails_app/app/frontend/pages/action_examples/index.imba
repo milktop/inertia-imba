@@ -4,6 +4,12 @@ export default tag ActionExamples
 	prop last_action
 	prop errors = {}
 	locked = true
+	updating = false
+	actionError = ''
+
+	def showActionError event
+		actionError = event.detail.errors.label
+
 
 	<self.action-examples>
 		css .action-button
@@ -22,6 +28,15 @@ export default tag ActionExamples
 			<LinkButton href="/action_examples" data={ action_demo: { label: 'Unlocked' } } disabled=locked> "Locked example"
 
 		<button type="button" @click=(locked = !locked)> locked ? 'Unlock example' : 'Lock example'
+
+		<section>
+			<h2> "Bound processing and errors"
+			<LinkButton href="/action_examples" data={ action_demo: { label: 'Bound action' } } bind:processing=updating aria-label="Bound action">
+				updating ? 'Saving…' : 'Save example'
+			<p data-testid="bound-processing"> "Updating: {updating}"
+			<LinkButton href="/action_examples" data={ action_demo: { label: '' } } @error=showActionError> "Handled validation example"
+			if actionError
+				<p data-testid="action-error"> "Button event: {actionError}"
 
 		if errors.label
 			<p role="alert"> errors.label

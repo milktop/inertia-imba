@@ -94,7 +94,13 @@ export declare class LinkButton extends HTMLButtonElement {
   method: Exclude<Method, 'get'>
   data: RequestPayload
   confirm?: string
-  readonly processing: boolean
+  /** Bindable output; writes do not control the internal request lifecycle. */
+  processing: boolean
   cancel(): void
 }
 export interface LinkButton extends Omit<LinkButtonProps, 'method' | 'data' | 'disabled'> {}
+
+/** Detail of LinkButton's bubbling error CustomEvent (Inertia validation errors). */
+export interface LinkButtonErrorDetail {
+  errors: Record<string, import('./form.js').ErrorMessage>
+}
