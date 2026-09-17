@@ -2,6 +2,13 @@
 
 An experimental client-side adapter for Inertia 3 and Imba 2.
 
+## Editor hints and API reference
+
+The package includes TypeScript declarations for its helpers and public entrypoints.
+See [the API guide](docs/api.md) for typed examples, JavaScript/JSDoc usage, and a
+supported-feature table. Method names stay consistent with other Inertia adapters.
+Run `npm run test:types` to check the declarations and usage examples.
+
 ## Rails setup
 
 Keep using `inertia_rails` on the server. Put Imba pages in

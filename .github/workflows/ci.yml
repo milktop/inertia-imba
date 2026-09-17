@@ -28,6 +28,7 @@ jobs:
       - run: npm ci
       - run: npm ci --prefix integration/rails_app
       - run: npm test
+      - run: npm run test:types
       - run: npm run test:integration
       - name: Rails tests
         working-directory: integration/rails_app

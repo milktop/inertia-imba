@@ -5,19 +5,30 @@
   "type": "module",
   "description": "Experimental Imba adapter for Inertia.js",
   "exports": {
-    ".": "./src/index.js",
-    "./form": "./src/form.js",
-    "./http": "./src/http.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./form": {
+      "types": "./src/form.d.ts",
+      "default": "./src/form.js"
+    },
+    "./http": {
+      "types": "./src/http.d.ts",
+      "default": "./src/http.js"
+    }
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "docs/api.md"
   ],
   "scripts": {
     "build": "imba build src/createInertiaApp.imba --esm --outdir dist",
     "test": "npm run build && node --test",
     "test:integration": "npm --prefix integration/rails_app run build",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:types": "tsc -p type-tests/tsconfig.json"
   },
   "peerDependencies": {
     "@inertiajs/core": "^3.7.1",
@@ -26,9 +37,12 @@
   "devDependencies": {
     "@inertiajs/core": "^3.7.1",
     "@playwright/test": "^1.63.0",
-    "imba": "^2.0.0-alpha.253"
+    "axios": "^1.20.0",
+    "imba": "^2.0.0-alpha.253",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "es-toolkit": "^1.52.0"
-  }
+  },
+  "types": "./src/index.d.ts"
 }
