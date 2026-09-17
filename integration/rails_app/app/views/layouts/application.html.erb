@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Inertia Imba integration</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= inertia_meta_tags %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag "inertia.js" %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>

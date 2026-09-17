@@ -1,0 +1,18 @@
+source "https://rubygems.org"
+
+gem "rails", "~> 8.1.0"
+# ActiveSupport 8.1 passes a positional options hash to JSON.parse.
+gem "json", "< 3"
+gem "sqlite3", ">= 2.1"
+gem "puma", ">= 6.0"
+gem "propshaft"
+gem "inertia_rails"
+gem "vite_rails"
+
+group :development, :test do
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+end
+
+group :development do
+  gem "foreman"
+end

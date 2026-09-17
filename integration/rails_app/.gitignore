@@ -1,0 +1,11 @@
+/log/*
+/storage/*
+/tmp/*
+!/log/.keep
+!/storage/.keep
+!/tmp/.keep
+/node_modules/
+/public/vite*
+/.bundle/
+/db/*.sqlite3*
+/.env*

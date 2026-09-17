@@ -1,0 +1,2 @@
+# Also load the shared rules when this Rails app is opened as its own workspace.
+inherit_from: ../../.rubocop.yml

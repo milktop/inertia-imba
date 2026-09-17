@@ -1,0 +1,32 @@
+{
+  "name": "@inertiajs/imba",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Experimental Imba adapter for Inertia.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./form": "./src/form.js",
+    "./http": "./src/http.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "imba build src/createInertiaApp.imba --esm --outdir dist",
+    "test": "npm run build && node --test",
+    "test:integration": "npm --prefix integration/rails_app run build"
+  },
+  "peerDependencies": {
+    "@inertiajs/core": "^3.7.1",
+    "imba": "^2.0.0-alpha.253"
+  },
+  "devDependencies": {
+    "@inertiajs/core": "^3.7.1",
+    "imba": "^2.0.0-alpha.253"
+  },
+  "dependencies": {
+    "es-toolkit": "^1.52.0"
+  }
+}

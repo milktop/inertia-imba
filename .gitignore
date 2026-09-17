@@ -1,0 +1,10 @@
+node_modules/
+dist/
+integration/rails_app/public/vite*/
+inertia-imba-prototype.zip
+.DS_Store
+.env
+.env.*
+!.env.example
+**/config/master.key
+**/config/credentials/*.key
