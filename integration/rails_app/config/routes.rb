@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :students, only: %i[index create]
+  resources :uploads, only: %i[index create]
 
   get "about", to: "pages#about"
   get "forms", to: "pages#forms"

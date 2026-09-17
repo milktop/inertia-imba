@@ -75,3 +75,16 @@ Click the header's layout counter, then navigate Students → About → Students
 The counter should survive while a draft in the Students form resets. Filtering
 Students preserves both the draft and the layout counter. Pages use ordinary
 `<self>` rendering; the layout renders the adapter-owned `pageContent` node.
+
+## Upload check
+
+Open About → File uploads (`/uploads`). Select a text file up to 2 MB and enter a
+title. On success, Rails reports the filename and byte count and the form clears.
+Submitting without a title or file displays Rails validation errors. The fixture
+only inspects metadata and does not retain or serve uploaded files.
+
+For a manual progress/cancel check, throttle the connection in browser devtools,
+select a larger text file, submit, and click Cancel upload while it is sending.
+The file remains selected so you can retry. Reset upload clears it and any errors.
+The browser suite automates these flows with a separate database; run
+`npm run test:browser` from the repository root.

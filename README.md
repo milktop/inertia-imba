@@ -357,8 +357,8 @@ layout-prop APIs are not implemented yet.
 - Named page props assigned before Imba's setup/render lifecycle
 - A first `useForm` implementation
 
-SSR, nested layouts, full Precognition parity, and end-to-end upload tests
-are intentionally left for the next iteration.
+SSR, nested layouts, and full Precognition parity remain future work.
+Multipart uploads now have browser and Rails regression coverage.
 
 ## Rails integration fixture
 
@@ -460,3 +460,39 @@ On Macs unsupported by bundled Chromium, use installed Google Chrome:
 `PLAYWRIGHT_CHANNEL=chrome npm run test:browser`.
 GitHub Actions runs unit tests, Rails tests, frontend builds, and browser tests;
 failed browser runs upload screenshots and traces.
+
+## File uploads
+
+`useForm` passes files to Inertia core, which automatically uses multipart
+`FormData` when a field contains a `File`, including nested fields. Assign the
+selected file from the input's change event; do not bind its string `value`:
+
+```imba
+    form = useForm({ title: '', file: null })
+
+    def chooseFile event
+        form.file = event.target.files[0] or null
+
+    def submit
+        form.post('/uploads')
+
+    <self>
+        <form @submit.prevent=submit>
+            <input type="file" @change=chooseFile>
+            if form.progress
+                <progress max=100 value=form.progress.percentage>
+            <button type="submit" disabled=form.processing> "Upload"
+            if form.processing
+                <button type="button" @click=form.cancel!> "Cancel"
+```
+
+`form.progress` is cleared when a request finishes or is cancelled. Cancellation
+keeps the selected file available for retry; it cannot undo work already accepted
+by a server. Resetting form data does not clear a native file picker: set that
+input's `value` to `''` when resetting or after success (see the fixture).
+
+The Rails fixture's `/uploads` page accepts a text file up to 2 MB, validates the
+title and file, and displays received metadata. It discards the temporary upload
+without storing or serving it. Browser tests use Chromium network throttling to
+exercise actual progress and cancellation, plus multipart submission, validation,
+retry, and native input reset. Rails tests also cover the size limit.

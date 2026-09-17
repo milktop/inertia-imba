@@ -21,16 +21,16 @@ class StudentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index returns named students and query props" do
-    Student.create!(name: "Ada Lovelace", email: "ada@example.test")
+    Student.create!(name: "Katherine Johnson", email: "katherine-controller@example.test")
 
-    get students_url(query: "Ada"), headers: inertia_headers
+    get students_url(query: "Katherine"), headers: inertia_headers
 
     assert_response :success
     page = response.parsed_body
     assert_equal "students/index", page.fetch("component")
     assert_equal "test", page.dig("props", "environment")
-    assert_equal "Ada", page.dig("props", "query")
-    assert_equal ["Ada Lovelace"], page.dig("props", "students").pluck("name")
+    assert_equal "Katherine", page.dig("props", "query")
+    assert_equal ["Katherine Johnson"], page.dig("props", "students").pluck("name")
   end
 
   test "optional props can disappear on a later response" do
