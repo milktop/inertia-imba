@@ -344,15 +344,17 @@ export default tag AuthenticatedLayout
 Pages use their normal `<self>` render, without inheriting the layout. The same
 layout instance stays mounted across visits even when page state resets. It
 receives current page props as named properties; omitted props are cleared.
-`pageContent` always contains the page node and cannot be overridden by server props.
+`pageContent` contains the next layout or page node and cannot be overridden by server props.
 Avoid page prop names that collide with DOM properties or layout-local state.
 
-The callback receives `(name, page)` and may return a layout tag, `null`, or
-`false`. A page module can override the default with `export const layout =
+The callback receives `(name, page)` and may return a layout tag, an array of tags,
+`null`, or `false`. A page module can override the default with `export const layout =
 OtherLayout`, or opt out with `export const layout = null`. A tag class's static
 `layout` property is also supported. An undefined declaration uses the default.
 Changing layouts or opting out unmounts the previous layout; returning later
 creates a fresh instance. Full browser reloads reset layout state too.
+
+### Nested persistent layouts
 
 For nested layouts, export a flat array **outermost first**:
 
@@ -392,7 +394,10 @@ the section resets, while the outer layout's click counter stays unchanged.
 - Client-side page mounting and Inertia navigation
 - Vite `import.meta.glob` page resolution
 - Named page props assigned before Imba's setup/render lifecycle
-- A first `useForm` implementation
+- Forms, remembered drafts, Precognition, and multipart uploads
+- Head management, link prefetching, deferred/visible data, and polling
+- [Single and nested persistent layouts](#persistent-layouts)
+- TypeScript declarations and browser regression coverage
 
 SSR and full Precognition parity remain future work.
 Multipart uploads now have browser and Rails regression coverage.
@@ -400,8 +405,8 @@ Multipart uploads now have browser and Rails regression coverage.
 ## Rails integration fixture
 
 `integration/rails_app` contains a small Rails 8.1 application with Students
-index/create actions, model validation, two Imba pages, named and removable
-props, and a persistent authenticated shell. Its frontend can be built from
+index/create and reports actions, model validation, upload and loading examples,
+named and removable props, and nested persistent layouts. Its frontend can be built from
 the repository root:
 
 ```sh

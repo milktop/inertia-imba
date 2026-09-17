@@ -79,6 +79,27 @@ import { useHttp } from '@inertiajs/imba'
 const preview = useHttp({ name: '' })
 ```
 
+## Nested persistent layouts
+
+Declare layouts outermost first on each page in a section:
+
+```imba
+import AppLayout from '../../layouts/app.imba'
+import StudentsLayout from '../../layouts/students.imba'
+
+export const layout = [AppLayout, StudentsLayout]
+```
+
+Each layout declares `prop pageContent` and renders `<{pageContent}>`. Pages with
+this same chain keep both layout instances. Navigating to a page using only
+`AppLayout` removes the Students layout; returning creates fresh section state.
+Changing an outer layout also recreates its inner layouts.
+
+The array replaces the application default, so include the app shell explicitly.
+Single tags still work, and `null`, `false`, or `[]` opts out. The default layout
+callback can also return an array. See the [full README example](../README.md#nested-persistent-layouts)
+and try Students → Student reports in the fixture.
+
 ## Supported surface
 
 | API | Supported behavior | Differences and limits |
