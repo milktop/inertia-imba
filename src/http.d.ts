@@ -4,6 +4,7 @@ import type { Endpoint, FormErrors, FormState, InitialData, Precognition } from 
 /** Only options implemented by this adapter's JSON helper are exposed. */
 export interface HttpOptions<T, Response> {
   headers?: Record<string, string>
+  optimistic?: (data: T) => Partial<T> | void
   onBefore?: () => boolean | void
   onStart?: () => void
   onProgress?: (progress: HttpProgressEvent) => void
@@ -21,6 +22,8 @@ export type HttpSubmitArguments<T, R, Bound extends boolean> =
   | (Bound extends true ? [options?: HttpOptions<T, R>] : never)
 
 export interface HttpMethods<T extends object, R, Bound extends boolean> extends FormState<T> {
+  /** Apply form-data changes for the next request, with rollback on failure. */
+  optimistic(callback: (data: T) => Partial<T> | void): this
   response: R | null
   withAllErrors(): this
   withPrecognition(...endpoint: UseFormWithPrecognitionArguments): HttpForm<T, R, true> & Precognition<T>

@@ -87,6 +87,7 @@ export interface LinkButtonProps extends Pick<LinkProps, 'replace' | 'preserveSt
   method?: Exclude<Method, 'get'>
   data?: RequestPayload
   confirm?: string
+  optimistic?: VisitOptions['optimistic']
   disabled?: boolean
 }
 export declare class LinkButton extends HTMLButtonElement {

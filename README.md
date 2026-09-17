@@ -337,9 +337,48 @@ using `useForm`.
 
 The shared form helper also provides `isDirty` and the defaults overloads above.
 `useHttp('Search', { query: '' })` remembers data/errors like keyed `useForm`.
-This is an initial implementation, not full adapter parity: optimistic updates
-are not implemented. Prebinding an
-endpoint does not enable Precognition; use `withPrecognition()` explicitly.
+Prebinding an endpoint does not enable Precognition; use `withPrecognition()` explicitly.
+
+## Optimistic updates
+
+Show an expected result immediately while the request runs. For Inertia visits,
+`useForm.optimistic(callback)` updates **page props**, with reconciliation and
+rollback handled by Inertia core:
+
+```js
+form.optimistic(props => ({ count: props.count + 1 })).post('/increment')
+```
+
+`LinkButton` accepts the same callback as an `optimistic` prop. For example,
+the Students fixture returns a new `students` array with the selected student's
+`active` flag flipped:
+
+```imba
+<LinkButton href="/students/{student.id}/toggle_active" method="patch" optimistic=optimisticToggle(student.id)>
+    student.active ? 'Deactivate' : 'Activate'
+```
+
+Return partial updates from the callback; do not mutate its argument. The server
+remains authoritative. Failed validation or cancellation restores the previous
+page props, and the button remains disabled while the request is pending.
+
+For `useHttp`, the callback updates **form data**, including the submitted payload:
+
+```js
+await preview.optimistic(data => ({ name: data.name.trim() })).post('/http-preview')
+```
+
+Both helpers also accept `{ optimistic: callback }` in submission options.
+The chained callback applies to the next submission only; an inline option takes
+precedence. HTTP rollback restores only the top-level fields changed by the
+callback, before error/cancellation callbacks run, preserving edits to unrelated
+fields. Editing a changed field during the request can be overwritten by rollback.
+Successful JSON remains in `response`; it does not automatically replace form data.
+An exception in `onSuccess` does not undo an accepted response.
+
+Try the Students toggle, or About → Optimistic HTTP updates for success and
+validation-failure examples. These updates improve perceived responsiveness;
+server validation and permissions still apply.
 
 ## Persistent layouts
 

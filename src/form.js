@@ -26,6 +26,7 @@ export function useForm(...args) {
   let recentlySuccessfulTimer = null
   let cancelToken = null
   let defaultsVersion = 0
+  let pendingOptimistic = null
   const excluded = new Set()
   let saveRemembered = () => {}
 
@@ -113,10 +114,18 @@ export function useForm(...args) {
       return withPrecognition(form, ...args)
     },
 
+    optimistic(callback) {
+      pendingOptimistic = callback
+      return form
+    },
+
     submit(method, url, options = {}) {
+      const optimistic = options.optimistic ?? pendingOptimistic ?? undefined
+      pendingOptimistic = null
       const data = form._transform ? form._transform(form.data()) : form.data()
       const visitOptions = {
         ...options,
+        optimistic,
         data,
         onCancelToken: (token) => {
           cancelToken = token

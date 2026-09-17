@@ -24,6 +24,12 @@ export default tag StudentsIndex
 			onSuccess: do form.reset!
 		})
 
+	def optimisticToggle id
+		do(props)
+			{ students: props.students.map(do(student)
+				student.id == id ? { ...student, active: !student.active } : student
+			) }
+
 	def search event
 		event.preventDefault!
 		router.get('/students', { query }, { preserveState: true, replace: true })
@@ -52,7 +58,7 @@ export default tag StudentsIndex
 					<li data-student-id=student.id>
 						<span> "{student.name} — {student.email} "
 						<span data-testid="student-status"> student.active ? 'Active' : 'Inactive'
-						<LinkButton href="/students/{student.id}/toggle_active" method="patch" data={ query } preserveScroll=true aria-pressed=student.active aria-label="Toggle active for {student.name}">
+						<LinkButton href="/students/{student.id}/toggle_active" method="patch" data={ query } preserveScroll=true optimistic=optimisticToggle(student.id) aria-pressed=student.active aria-label="Toggle active for {student.name}">
 							student.active ? 'Deactivate' : 'Activate'
 
 			<article>

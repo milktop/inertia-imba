@@ -66,8 +66,11 @@ http.submit({ method: 'post', url: '/preview' })
 http.withPrecognition('post', '/preview').validate('email').submit()
 // @ts-expect-error HTTP options do not support Inertia visits
 http.post('/preview', { preserveState: true })
-// @ts-expect-error optimistic HTTP updates are not implemented
-http.post('/preview', { optimistic: () => ({ name: 'New' }) })
+http.post('/preview', { optimistic: data => ({ name: data.name + '!' }) })
+http.optimistic(data => ({profile: {age: data.profile.age + 1}})).post('/preview')
+// @ts-expect-error optimistic HTTP data retains its types
+http.optimistic(() => ({name: 123}))
+form.optimistic<{ students: Student[] }>(props => ({students: [...props.students, data]})).post('/students')
 // @ts-expect-error no configured endpoint
 http.submit()
 const boundHttp = useHttp<Student, Greeting>('post', '/preview', data)

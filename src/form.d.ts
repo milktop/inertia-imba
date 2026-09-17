@@ -1,6 +1,6 @@
 import type {
   FormDataKeys, FormDataValues, FormDataType, HttpResponse, Method, Progress,
-  UrlMethodPair, UseFormSubmitOptions, UseFormWithPrecognitionArguments,
+  OptimisticCallback, Page, UrlMethodPair, UseFormSubmitOptions, UseFormWithPrecognitionArguments,
 } from '@inertiajs/core'
 
 /** Rails may return arrays; Precognition simplifies them unless withAllErrors() is enabled. */
@@ -72,6 +72,8 @@ export type FormSubmitArguments<Bound extends boolean> =
   | (Bound extends true ? [endpoint: UrlMethodPair, options?: UseFormSubmitOptions] | [options?: UseFormSubmitOptions] : never)
 
 export interface FormMethods<T extends object, Bound extends boolean> extends FormState<T> {
+  /** Apply page-prop changes for the next submission; Inertia handles rollback. */
+  optimistic<TProps = Page['props']>(callback: OptimisticCallback<TProps>): this
   withPrecognition(...endpoint: UseFormWithPrecognitionArguments): PrecognitiveForm<T>
   submit(...args: FormSubmitArguments<Bound>): void
   get(url: string, options?: UseFormSubmitOptions): void

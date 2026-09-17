@@ -7,6 +7,7 @@ export tag LinkButton < button
 	prop method = 'post'
 	prop data = {}
 	prop confirm
+	prop optimistic
 	prop processing = false
 	prop replace = false
 	prop preserveState = true
@@ -39,7 +40,7 @@ export tag LinkButton < button
 			return {
 				href, method, data, confirm
 				disabled: disabledByUser
-				options: { replace, preserveState, preserveScroll, only, except, headers }
+				options: { replace, preserveState, preserveScroll, only, except, headers, optimistic }
 			}
 		let changed = do syncState!
 		let reportError = do(errors) emit('error', { errors })

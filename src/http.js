@@ -3,6 +3,7 @@ import {
   mergeDataIntoQueryString, objectToFormData, UseFormUtils,
 } from '@inertiajs/core'
 import { commit } from 'imba'
+import { cloneDeepWith, isEqualWith } from 'es-toolkit'
 import { useForm } from './form.js'
 
 import { requestHeaders } from './requestHeaders.js'
@@ -17,7 +18,13 @@ export function useHttp(...args) {
   let active = null
   let successTimer = null
   let allErrors = false
+  let pendingOptimistic = null
+  const isBlob = value => typeof Blob !== 'undefined' && value instanceof Blob
+  const clone = value => cloneDeepWith(value, item => isBlob(item) ? item : undefined)
+  const equal = (a, b) => isEqualWith(a, b, (left, right) =>
+    isBlob(left) || isBlob(right) ? left === right : undefined)
 
+  form.optimistic = callback => { pendingOptimistic = callback; return form }
   form.response = null
   form.defaults = (...values) => {
     defaultsVersion++
@@ -31,8 +38,17 @@ export function useHttp(...args) {
     const { method, url, options = {} } = UseFormUtils.parseSubmitArguments(submission, endpoint)
     if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) throw new Error(`Unsupported HTTP method: ${method}`)
     if (active) throw new Error('This useHttp instance already has a pending request; cancel and await it or use a separate instance')
-    if (options.optimistic) throw new Error('useHttp optimistic updates are not supported yet')
     if (options.onBefore?.() === false) throw new HttpCancelledError('Request cancelled by onBefore', url)
+
+    const optimistic = options.optimistic ?? pendingOptimistic ?? undefined
+    pendingOptimistic = null
+    const snapshot = new Map()
+    let succeeded = false
+    const rollback = () => {
+      for (const [key, value] of snapshot) form[key] = value
+      snapshot.clear()
+      commit()
+    }
 
     const controller = new AbortController()
     active = controller
@@ -46,6 +62,24 @@ export function useHttp(...args) {
 
     try {
       options.onCancelToken?.({ cancel: () => controller.abort() })
+      if (optimistic) {
+        const before = clone(form.data())
+        const updates = optimistic(clone(before))
+        // Apply only declared data fields: optimistic updates must not replace
+        // methods, errors or processing state. Validate before changing anything.
+        if (updates) {
+          for (const key of Object.keys(updates)) {
+            if (!Object.hasOwn(before, key)) throw new Error(`Unknown optimistic form field: ${key}`)
+          }
+          for (const [key, value] of Object.entries(updates)) {
+            if (!equal(before[key], value)) {
+              snapshot.set(key, before[key])
+              form[key] = clone(value)
+            }
+          }
+          commit()
+        }
+      }
       options.onStart?.()
       const payload = form._transform ? form._transform(form.data()) : form.data()
       let requestUrl = url
@@ -80,6 +114,7 @@ export function useHttp(...args) {
           throw new HttpResponseError(`Request failed with status ${response.status}`, response, url)
         }
       } catch (error) {
+        rollback()
         if (error instanceof HttpResponseError) {
           if (error.response.status === 422) {
             const errors = JSON.parse(error.response.data).errors || {}
@@ -100,6 +135,8 @@ export function useHttp(...args) {
       }
 
       const result = response.data ? JSON.parse(response.data) : null
+      succeeded = true
+      snapshot.clear()
       form.response = result
       form.wasSuccessful = true
       form.recentlySuccessful = true
@@ -109,6 +146,11 @@ export function useHttp(...args) {
       await options.onSuccess?.(result, response)
       if (version === defaultsVersion) form.defaults()
       return result
+    } catch (error) {
+      // Transform/optimistic callback/JSON failures also undo the local update.
+      // An onSuccess exception cannot undo a request the server accepted.
+      if (!succeeded) rollback()
+      throw error
     } finally {
       active = null
       form.processing = false

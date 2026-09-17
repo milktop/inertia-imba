@@ -7,6 +7,7 @@ export default tag AboutPage
 
 	preview = useHttp({ name: '' })
 	requestFailure = ''
+	hopeful = useHttp({ name: 'Ada' })
 
 	def submitPreview
 		requestFailure = ''
@@ -16,7 +17,15 @@ export default tag AboutPage
 			requestFailure = 'Unable to load the preview. Please try again.'
 			imba.commit!
 
+	def optimisticPreview fail = false
+		try
+			await hopeful.optimistic(do(data) { name: fail ? '' : "{data.name}!" }).post('/http-preview')
+		catch error
+			requestFailure = 'Unable to load the preview. Please try again.'
+			imba.commit!
+
 	def unmount
+		hopeful.cancel!
 		preview.cancel!
 
 	<self.about-page>
@@ -43,3 +52,17 @@ export default tag AboutPage
 				<p role="status"> preview.response.message
 			if requestFailure
 				<p.error> requestFailure
+
+		<article>
+			<h2> "Optimistic HTTP updates"
+			<p> "The name changes immediately. A rejected update restores its previous value."
+			<label>
+				"Optimistic preview name"
+				<input bind=hopeful.name>
+			<p data-testid="optimistic-name"> hopeful.name or '(blank)'
+			<button type="button" disabled=hopeful.processing @click=optimisticPreview(false)> "Try successful update"
+			<button type="button" disabled=hopeful.processing @click=optimisticPreview(true)> "Try rejected update"
+			if hopeful.errors.name
+				<p role="alert"> hopeful.errors.name
+			if hopeful.response
+				<p> hopeful.response.message
