@@ -80,6 +80,22 @@ import { useHttp } from '@inertiajs/imba'
 const preview = useHttp({ name: '' })
 ```
 
+## Optimistic updates
+
+`useForm.optimistic(callback)` returns the form and updates page props for its
+next submission. `LinkButton` accepts an `optimistic` prop with the same callback.
+Inertia core handles reconciliation and rollback for these visits.
+
+`useHttp.optimistic(callback)` instead updates its own data before transforming
+and submitting it. The callback returns partial data with type-checked values.
+Failure or cancellation restores the changed top-level fields before callbacks;
+unrelated fields keep their current values. Success keeps the update and stores
+server JSON separately in `response`.
+
+Both submission option types accept `optimistic`; this overrides a pending
+chained callback. Return partial updates rather than mutating callback arguments.
+See [examples and rollback details](../README.md#optimistic-updates).
+
 ## Nested persistent layouts
 
 Declare layouts outermost first on each page in a section:
@@ -129,13 +145,13 @@ for options and styling, and use `useForm` for richer form state and callbacks.
 | API | Supported behavior | Differences and limits |
 | --- | --- | --- |
 | `createInertiaApp` | Browser mounting, async page resolver, custom setup, titles and progress | No SSR; single or nested layouts, with shared outer instances preserved |
-| `useForm` | Data, dirty tracking, defaults/reset, errors, transforms, verbs, progress/cancel, remembered state | Plain forms do not have Precognition-only methods; Inertia submissions return void |
+| `useForm` | Data, dirty tracking, defaults/reset, errors, transforms, verbs, progress/cancel, remembered state, optimistic page props | Plain forms do not have Precognition-only methods; Inertia submissions return void |
 | Precognition | Bound endpoints, field-specific validation, touch/valid/invalid, debounce, file opt-in, all errors | Explicit triggers; no `validator()`, wildcard paths, or full upstream callbacks |
-| `useHttp` | JSON and multipart requests, callbacks, remembered drafts, optional Precognition | No optimistic updates or Inertia visit options; one active request per instance |
+| `useHttp` | JSON and multipart requests, callbacks, remembered drafts, optimistic data, optional Precognition | No Inertia visit options; one active request per instance |
 | `useRemember` | Deep mutations of plain objects/arrays saved in history | Files become null; use serializable data |
 | `getPage`, `onPageChange` | Current page and subscription | `getPage()` can be null before mounting; unsubscribe when finished |
 | `Link` | GET navigation, native anchor behavior, hover/focus prefetch, cache duration/tags | No non-GET buttons or mount/click prefetch modes |
-| `LinkButton` | Native POST/PUT/PATCH/DELETE buttons, payloads, optional confirmation, automatic disabling, bindable processing, validation error events, cancel | Separate from GET Link; no prefetch; same-origin actions |
+| `LinkButton` | Native POST/PUT/PATCH/DELETE buttons, payloads, optional confirmation, automatic disabling, bindable processing, validation error events, cancel, optimistic page props | Separate from GET Link; no prefetch; same-origin actions |
 | `Head` | Titles and keyed head entries with cleanup | Browser-only |
 | `Deferred` | One/multiple props, fallback/rescue slots, lazy `content` callback | Ordinary Imba child expressions evaluate eagerly; no reloading indicator API |
 | `WhenVisible` | Partial reloads, buffer, repeat opt-in, retry, unmount cancellation | Supply data or reload params; remount when changing observer configuration |
