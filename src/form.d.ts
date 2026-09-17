@@ -1,5 +1,5 @@
 import type {
-  FormDataKeys, FormDataType, HttpResponse, Method, Progress,
+  FormDataKeys, FormDataValues, FormDataType, HttpResponse, Method, Progress,
   UrlMethodPair, UseFormSubmitOptions, UseFormWithPrecognitionArguments,
 } from '@inertiajs/core'
 
@@ -26,11 +26,11 @@ export interface FormState<T extends object> {
   transform<U extends FormDataType<U>>(callback: (data: T) => U | FormData): this
   /** Make the current data the defaults used by reset(). */
   defaults(): this
-  defaults<K extends FormKey<T>>(field: K, value: T[K]): this
-  defaults(values: Partial<T>): this
-  /** Reset top-level fields. Use clearErrors() for dotted validation paths. */
-  reset(...fields: FormKey<T>[]): this
-  resetAndClearErrors(...fields: FormKey<T>[]): this
+  defaults<K extends FormDataKeys<T>>(field: K, value: FormDataValues<T, K>): this
+  defaults(values: { [K in FormDataKeys<T>]?: FormDataValues<T, K> }): this
+  /** Reset whole fields or dotted paths, including numeric array indices. */
+  reset(...fields: FormDataKeys<T>[]): this
+  resetAndClearErrors(...fields: FormDataKeys<T>[]): this
   setError(field: FormDataKeys<T>, message: ErrorMessage): this
   setError(errors: FormErrors<T>): this
   clearErrors(...fields: FormDataKeys<T>[]): this

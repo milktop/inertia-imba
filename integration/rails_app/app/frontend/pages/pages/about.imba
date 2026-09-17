@@ -25,6 +25,7 @@ export default tag AboutPage
 			<h1> "About this fixture"
 			<p> "Adapter version {adapter_version}"
 			<p> "Navigating here swaps the page class and keeps the shared layout mounted."
+			<Link href="/forms"> "Nested form helpers"
 			<Link href="/loading"> "Loading examples"
 			<Link href="/uploads"> "File uploads"
 			<Link href="/action_examples"> "Action buttons"

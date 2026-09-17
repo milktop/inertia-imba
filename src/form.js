@@ -1,6 +1,7 @@
 import { router, UseFormUtils } from '@inertiajs/core'
 import { commit } from 'imba'
 import { cloneDeepWith, isEqualWith } from 'es-toolkit'
+import { get, has, set, toPath } from 'es-toolkit/compat'
 import { rememberObject } from './remember.js'
 import { withPrecognition } from './precognition.js'
 
@@ -9,6 +10,14 @@ const isBlob = value => typeof Blob !== 'undefined' && value instanceof Blob
 const clone = value => cloneDeepWith(value, item => isBlob(item) ? item : undefined)
 const equal = (left, right) => isEqualWith(left, right, (a, b) =>
   isBlob(a) || isBlob(b) ? a === b : undefined)
+
+// Never let a caller-provided path traverse a prototype or mutate helper methods.
+function checkPath(field) {
+  if (typeof field !== 'string' || !field.length ||
+      toPath(field).some(key => ['__proto__', 'constructor', 'prototype'].includes(key))) {
+    throw new Error(`Invalid form field path: ${field}`)
+  }
+}
 
 export function useForm(...args) {
   const { rememberKey, data, precognitionEndpoint } = UseFormUtils.parseUseFormArguments(...args)
@@ -42,17 +51,31 @@ export function useForm(...args) {
     },
 
     defaults(field, value) {
+      const updates = typeof field === 'string' ? { [field]: value } : field
+      if (arguments.length) {
+        for (const path of Object.keys(updates)) {
+          checkPath(path)
+          const root = Object.hasOwn(defaults, path) ? path : toPath(path)[0]
+          if (!Object.hasOwn(defaults, root) && Object.hasOwn(form, root)) {
+            throw new Error(`Form field conflicts with a helper: ${root}`)
+          }
+        }
+      }
       defaultsVersion++
-      defaults = arguments.length === 0
-        ? clone(form.data())
-        : { ...defaults, ...clone(typeof field === 'string' ? { [field]: value } : field) }
+      if (!arguments.length) defaults = clone(form.data())
+      else for (const [path, next] of Object.entries(updates)) set(defaults, path, clone(next))
       commit()
       return form
     },
 
     reset(...fields) {
+      fields.forEach(checkPath)
+      const data = form.data()
       const keys = fields.length ? fields : Object.keys(defaults)
-      for (const key of keys) form[key] = clone(defaults[key])
+      for (const path of keys) {
+        if (has(defaults, path)) set(data, path, clone(get(defaults, path)))
+      }
+      for (const key of Object.keys(defaults)) form[key] = data[key]
       commit()
       return form
     },

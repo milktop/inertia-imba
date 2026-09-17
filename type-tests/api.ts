@@ -28,8 +28,13 @@ form.validate('name')
 form.name = 42
 // @ts-expect-error defaults preserve field types
 form.defaults('name', false)
-// @ts-expect-error reset currently operates on top-level fields only
-form.reset('profile.age')
+form.reset('profile.age').defaults('profile.age', 22).defaults({'profile.age': 23})
+// @ts-expect-error nested defaults retain the leaf type
+form.defaults('profile.age', 'old')
+// @ts-expect-error nested map values retain the leaf type
+form.defaults({'profile.age': 'old'})
+// @ts-expect-error unknown reset field
+form.reset('profile.missing')
 // @ts-expect-error unknown field
 form.clearErrors('missing')
 // @ts-expect-error unknown option

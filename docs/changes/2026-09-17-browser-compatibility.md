@@ -13,3 +13,9 @@ button, binding, history and lifecycle checks before claiming compatibility.
 
 Refresh README action-button and browser-testing descriptions. SSR remains
 parked; the saved experiments and caveats are linked from the README.
+
+CI run 35226068227 passed in all three engines: 19 Chromium tests, and 17 tests
+plus the two documented CDP skips in each of Firefox and WebKit. This covers
+native Link/LinkButton rendering, processing bindings, history, Precognition,
+nested layouts, uploads and polling. It is engine coverage on Linux, not a claim
+that every Safari/iOS device has been tested.

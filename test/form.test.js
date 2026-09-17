@@ -161,3 +161,46 @@ test('a prior success timer cannot clear the next success early', async (t) => {
   t.mock.timers.tick(1500)
   assert.equal(form.recentlySuccessful, false)
 })
+
+test('dotted resets/defaults isolate nested fields and numeric array items', () => {
+  const form = useForm({ student: { name: 'Ada', email: 'old' }, lessons: [{ title: 'Math' }, { title: 'Art' }] })
+  form.student.name = 'Grace'
+  form.student.email = 'new'
+  form.lessons[0].title = 'Code'
+  form.lessons[1].title = 'Music'
+  form.setError({ 'student.name': 'Taken', 'student.email': 'Invalid' })
+  form.resetAndClearErrors('student.name', 'lessons.0.title')
+  assert.deepEqual(form.student, { name: 'Ada', email: 'new' })
+  assert.deepEqual(form.lessons, [{ title: 'Math' }, { title: 'Music' }])
+  assert.deepEqual(form.errors, { 'student.email': 'Invalid' })
+  form.defaults('student.email', 'saved').defaults({ 'lessons.1.title': 'Drama' })
+  form.reset()
+  assert.deepEqual(form.data(), { student: { name: 'Ada', email: 'saved' }, lessons: [{ title: 'Math' }, { title: 'Drama' }] })
+  assert.equal(form.isDirty, false)
+  assert.equal(Object.hasOwn(form.data(), 'student.email'), false)
+})
+
+test('nested helpers handle removed parents, unknown paths, literal dotted keys and files', () => {
+  const file = new File(['data'], 'notes.txt')
+  const form = useForm({ student: { name: 'Ada', file }, 'literal.key': 'original' })
+  form.student = null
+  form.reset('student.name', 'student.file', 'missing.path')
+  assert.equal(form.student.name, 'Ada')
+  assert.equal(form.student.file, file)
+  assert.equal(Object.hasOwn(form, 'missing'), false)
+  form['literal.key'] = 'edit'
+  form.defaults('literal.key', 'saved').reset('literal.key')
+  assert.equal(form['literal.key'], 'saved')
+  assert.equal(Object.hasOwn(form, 'literal'), false)
+})
+
+test('field paths cannot pollute prototypes or overwrite form helper methods', () => {
+  const form = useForm({ student: { name: '' } })
+  for (const path of ['__proto__.polluted', 'constructor.prototype.polluted', 'student.__proto__.polluted']) {
+    assert.throws(() => form.defaults(path, true), /Invalid form field/)
+    assert.throws(() => form.reset(path), /Invalid form field/)
+  }
+  assert.throws(() => form.defaults('reset.property', true), /conflicts with a helper/)
+  assert.equal({}.polluted, undefined)
+  assert.equal(typeof form.reset, 'function')
+})

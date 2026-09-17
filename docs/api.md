@@ -34,8 +34,9 @@ form.submit({ preserveScroll: true })
 ```
 
 Field names and values are checked. `reset`, `defaults`, `resetAndClearErrors`,
-and `dontRemember` operate on top-level data keys. Validation and error helpers
-accept dotted paths such as `profile.name` and `students.0.email`. Use data keys
+validation and error helpers accept dotted paths such as `profile.name` and
+`students.0.email`. `defaults` checks the value type at that path, including maps
+such as `{ "profile.age": 21 }`. `dontRemember` accepts top-level keys only. Use data keys
 that do not collide with helper properties such as `errors` or `processing`.
 
 Errors are typed as `string | string[] | undefined`: Rails may return arrays,

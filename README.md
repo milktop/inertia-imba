@@ -124,11 +124,11 @@ processing state update without application-level `imba.commit()` calls.
 - `isDirty` compares current fields (including nested objects and arrays) with
   defaults. It is read-only and updates when read during rendering.
 - `defaults()` accepts current values as defaults; `defaults('name', value)` or
-  `defaults({ name: value })` updates selected top-level defaults without dropping
+  `defaults({ name: value })` updates selected defaults without dropping
   other fields. Successful submissions update defaults after awaiting `onSuccess`,
   unless that callback explicitly calls `defaults`. Calling `reset()` inside
   `onSuccess` still resets to the previous defaults.
-- `resetAndClearErrors(...fields)` resets selected top-level fields and clears
+- `resetAndClearErrors(...fields)` resets selected fields and clears
   their errors; omit fields to reset everything.
 - `cancel()` cancels the current visit using Inertia's cancellation token. The
   supplied `onCancelToken`, `onCancel`, and `onFinish` callbacks remain available.
@@ -136,7 +136,15 @@ processing state update without application-level `imba.commit()` calls.
   Upload conversion remains handled by Inertia core; `forceFormData` and progress
   callbacks pass through. Selecting a different file marks the form dirty.
 
-Nested field-path methods are still pending. Use separate form instances for
+`reset`, `resetAndClearErrors` and `defaults` accept dotted paths, including array
+indices: `form.reset('student.name', 'lessons.0.title')` and
+`form.defaults('student.email', 'ada@example.test')`. A defaults map can also use
+paths: `form.defaults({ 'student.name': 'Ada' })`. Sibling values are preserved;
+resetting an unknown path is a no-op. Existing literal dotted data keys take
+precedence. Error clearing targets the exact specified keys. `dontRemember`
+continues to accept top-level fields only.
+
+Try About → Nested form helpers in the fixture. Use separate form instances for
 independently concurrent submissions.
 
 ## Remembered state
@@ -330,7 +338,7 @@ using `useForm`.
 The shared form helper also provides `isDirty` and the defaults overloads above.
 `useHttp('Search', { query: '' })` remembers data/errors like keyed `useForm`.
 This is an initial implementation, not full adapter parity: optimistic updates
-and nested field-path reset/default helpers are not implemented. Prebinding an
+are not implemented. Prebinding an
 endpoint does not enable Precognition; use `withPrecognition()` explicitly.
 
 ## Persistent layouts
