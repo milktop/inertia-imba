@@ -538,3 +538,40 @@ title and file, and displays received metadata. It discards the temporary upload
 without storing or serving it. Browser tests use Chromium network throttling to
 exercise actual progress and cancellation, plus multipart submission, validation,
 retry, and native input reset. Rails tests also cover the size limit.
+
+## Action buttons
+
+Use `LinkButton` for POST, PUT, PATCH, or DELETE actions without a full form:
+
+```imba
+import { LinkButton } from '@inertiajs/imba'
+
+<LinkButton.action-button href="/students/123" method="delete" confirm="Delete this student?" [c:gray4]>
+    "Delete student"
+```
+
+`LinkButton` is a native `<button type="button">` with no wrapper. Both Imba `[]`
+styles and classes apply to that button. Keep using `Link` for GET navigation:
+Imba fixes each tag's native element before receiving props, so separate exports
+preserve correct native behavior and direct styling.
+
+- `method` defaults to `post`; `put`, `patch`, and `delete` are also supported.
+- `data` supplies the request payload, for example `data={ archived: true }`.
+- An optional `confirm` string calls `window.confirm` before submission. Cancel
+  sends nothing and leaves the button enabled unless explicitly disabled.
+- While processing, the button disables itself and carries `data-loading`.
+  Completion, validation failure, or cancellation clears that temporary state.
+  An explicit `disabled=true` remains effective until you change it.
+- The instance exposes read-only `processing` and `cancel()`. Removal cancels
+  its pending request. Cancellation cannot undo work already accepted by Rails.
+- `replace`, `preserveState`, `preserveScroll`, `only`, `except`, and `headers`
+  are supported. `preserveState` defaults to true for actions.
+- Actions use same-origin HTTP(S) destinations and are never prefetched.
+
+For loading styles, target `.action-button[data-loading]`. `css >>> link` does
+not refer to either exported component: the actual elements are `a` and `button`.
+Use explicit classes when you want the same styles on both.
+
+Use `useForm` when you need editable fields, form errors, or submission callbacks.
+Visit About → Action buttons in the Rails fixture for session-only examples that
+do not change student records.

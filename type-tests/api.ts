@@ -1,6 +1,6 @@
 import {
   useForm, useHttp, useRemember, usePoll, getPage, onPageChange,
-  createInertiaApp, Link, Head, Deferred, WhenVisible, router, progress,
+  createInertiaApp, Link, LinkButton, Head, Deferred, WhenVisible, router, progress,
 } from '@inertiajs/imba'
 import { useForm as subpathForm } from '@inertiajs/imba/form'
 import { useHttp as subpathHttp, requestHeaders } from '@inertiajs/imba/http'
@@ -109,3 +109,17 @@ const visible = new WhenVisible()
 visible.buffer = 100
 visible.retry()
 void [name, dirty, percentage, error, response, students, link, postLink, mountPrefetch, Link, Head, router, progress]
+
+const actionButton = new LinkButton()
+actionButton.href = '/students/123'
+actionButton.method = 'delete'
+actionButton.confirm = 'Delete student?'
+actionButton.disabled = true
+actionButton.data = { reason: 'duplicate' }
+actionButton.cancel()
+// @ts-expect-error use Link for GET navigation
+actionButton.method = 'get'
+// @ts-expect-error actions cannot be prefetched
+actionButton.prefetch = true
+// @ts-expect-error native confirmation takes a message, not a callback
+actionButton.confirm = () => true

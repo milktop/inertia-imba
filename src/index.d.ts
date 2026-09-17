@@ -1,4 +1,4 @@
-import type { Page, PageProps, ProgressOptions, VisitOptions, PrefetchOptions, Router } from '@inertiajs/core'
+import type { Method, RequestPayload, Page, PageProps, ProgressOptions, VisitOptions, PrefetchOptions, Router } from '@inertiajs/core'
 export { router, progress } from '@inertiajs/core'
 export { useForm } from './form.js'
 export type { Form, PrecognitiveForm, FormState, FormErrors, ErrorMessage, ValidationOptions, Precognition } from './form.js'
@@ -80,3 +80,21 @@ export declare class WhenVisible implements WhenVisibleProps {
   content?: WhenVisibleProps['content']
   retry(): void
 }
+
+/** Non-GET actions render directly as native buttons; no wrapper. */
+export interface LinkButtonProps extends Pick<LinkProps, 'replace' | 'preserveState' | 'preserveScroll' | 'only' | 'except' | 'headers'> {
+  href: string
+  method?: Exclude<Method, 'get'>
+  data?: RequestPayload
+  confirm?: string
+  disabled?: boolean
+}
+export declare class LinkButton extends HTMLButtonElement {
+  href: string
+  method: Exclude<Method, 'get'>
+  data: RequestPayload
+  confirm?: string
+  readonly processing: boolean
+  cancel(): void
+}
+export interface LinkButton extends Omit<LinkButtonProps, 'method' | 'data' | 'disabled'> {}

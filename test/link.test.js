@@ -101,3 +101,67 @@ test('external links, targets, downloads and same-page fragments stay native', (
   assert.equal(click({ attrs: { target: '_self' }, baseTarget: '_blank' }).calls.length, 1)
   assert.equal(click({ href: '/students#section' }).calls.length, 1)
 })
+
+test('button actions confirm before submitting, prevent duplicates, and recover on finish', async () => {
+  const { createLinkAction } = await import('../src/link.js')
+  let accepted = false
+  let prompts = 0
+  const calls = []
+  const { anchor } = click()
+  anchor.ownerDocument.defaultView = { confirm: message => { assert.equal(message, 'Delete student?'); prompts++; return accepted } }
+  const config = { href: '/students/123', method: 'delete', data: { reason: 'duplicate' }, confirm: 'Delete student?' }
+  const action = createLinkAction(anchor, () => config, { visit: (...args) => { calls.push(args); args[1].onCancelToken({ cancel() {} }) } })
+  const event = () => ({ preventDefault() {} })
+  action.follow(event())
+  assert.equal(calls.length, 0)
+  assert.equal(action.state.processing, false)
+  accepted = true
+  action.follow(event())
+  action.follow(event())
+  assert.equal(prompts, 2)
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0][1].method, 'delete')
+  assert.deepEqual(calls[0][1].data, { reason: 'duplicate' })
+  assert.equal(calls[0][1].preserveState, true)
+  assert.equal(action.state.processing, true)
+  calls[0][1].onFinish()
+  assert.equal(action.state.processing, false)
+  config.disabled = true
+  action.follow(event())
+  assert.equal(calls.length, 1)
+  action.destroy()
+})
+
+test('button actions cancel on removal and reject unsafe destinations without submitting', async () => {
+  const { createLinkAction } = await import('../src/link.js')
+  const { anchor } = click()
+  let options
+  let cancelled = 0
+  const config = { href: 'https://elsewhere.test', method: 'post' }
+  const action = createLinkAction(anchor, () => config, {
+    visit: (_url, value) => { options = value; value.onCancelToken({ cancel: () => { cancelled++; value.onFinish() } }) },
+  })
+  for (const href of ['https://elsewhere.test', 'javascript:alert(1)', '#section', '']) {
+    config.href = href
+    action.follow({ preventDefault() {} })
+    assert.equal(options, undefined)
+  }
+  config.href = '/students'
+  action.follow({ preventDefault() {} })
+  action.destroy()
+  assert.equal(cancelled, 1)
+  assert.equal(action.state.processing, false)
+  action.follow({ preventDefault() { assert.fail('disposed') } })
+})
+
+test('button actions recover when visits are vetoed or throw before sending', async () => {
+  const { createLinkAction } = await import('../src/link.js')
+  const { anchor } = click()
+  const config = { href: '/students', method: 'patch', options: { preserveState: false } }
+  const vetoed = createLinkAction(anchor, () => config, { visit() {} })
+  vetoed.follow({ preventDefault() {} })
+  assert.equal(vetoed.state.processing, false)
+  const broken = createLinkAction(anchor, () => config, { visit() { throw new Error('failed') } })
+  assert.throws(() => broken.follow({ preventDefault() {} }), /failed/)
+  assert.equal(broken.state.processing, false)
+})

@@ -53,3 +53,63 @@ export function createLinkPrefetch(anchor, options, config, router) {
     },
   }
 }
+
+// Button actions deliberately accept only same-origin HTTP(S) destinations.
+export function actionUrl(button, href) {
+  if (!href || href.startsWith('#')) return null
+  const url = new URL(href, button.ownerDocument.baseURI)
+  const current = new URL(button.ownerDocument.location.href)
+  return ['http:', 'https:'].includes(url.protocol) && url.origin === current.origin ? url.href : null
+}
+
+export function createLinkAction(button, settings, router, changed = () => {}) {
+  const state = { processing: false }
+  let disposed = false
+  let token
+  let generation = 0
+  const finish = request => {
+    if (request !== generation) return
+    token = null
+    state.processing = false
+    if (!disposed) changed()
+  }
+  return {
+    state,
+    follow(event) {
+      if (disposed || event.defaultPrevented) return
+      event.preventDefault()
+      const config = settings()
+      if (state.processing || config.disabled) return
+      const method = (config.method ?? 'post').toLowerCase()
+      if (!['post', 'put', 'patch', 'delete'].includes(method)) throw new Error(`Unsupported LinkButton method: ${method}`)
+      const url = actionUrl(button, config.href)
+      if (!url) return
+      if (config.confirm && !button.ownerDocument.defaultView.confirm(config.confirm)) return
+
+      const request = ++generation
+      state.processing = true
+      changed()
+      try {
+        router.visit(url, {
+          ...config.options,
+          method,
+          data: config.data ?? {},
+          preserveState: config.options?.preserveState ?? true,
+          onCancelToken: value => { token = value; if (disposed) value.cancel() },
+          onFinish: () => finish(request),
+        })
+        // Inertia's global before event can veto a visit without onFinish.
+        if (!token) finish(request)
+      } catch (error) {
+        finish(request)
+        throw error
+      }
+    },
+    cancel() { token?.cancel() },
+    destroy() {
+      disposed = true
+      token?.cancel()
+      finish(generation)
+    },
+  }
+}

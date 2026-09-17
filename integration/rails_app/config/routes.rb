@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   resources :students, only: %i[index create] do
     get :reports, on: :collection
   end
+  resources :action_examples, only: %i[index create update destroy]
   resources :uploads, only: %i[index create]
 
   get "about", to: "pages#about"

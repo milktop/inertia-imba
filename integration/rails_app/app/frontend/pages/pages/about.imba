@@ -27,6 +27,7 @@ export default tag AboutPage
 			<p> "Navigating here swaps the page class and keeps the shared layout mounted."
 			<Link href="/loading"> "Loading examples"
 			<Link href="/uploads"> "File uploads"
+			<Link href="/action_examples"> "Action buttons"
 			<button @click=count++> "Click"
 
 		<article>

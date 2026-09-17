@@ -100,6 +100,26 @@ Single tags still work, and `null`, `false`, or `[]` opts out. The default layou
 callback can also return an array. See the [full README example](../README.md#nested-persistent-layouts)
 and try Students → Student reports in the fixture.
 
+## Action buttons
+
+```imba
+import { LinkButton } from '@inertiajs/imba'
+
+<LinkButton href="/students/123" method="delete" confirm="Delete this student?" [c:gray4]>
+    "Delete student"
+```
+
+This renders a native button, so inline styles and classes target the clickable
+element directly. `method` defaults to POST. `data` supplies a payload. The optional
+confirmation appears before a request; cancellation does nothing. Processing
+sets native disabled and `data-loading`; completion clears them while respecting
+any explicit disabled prop. `processing` is read-only and `cancel()` cancels an
+in-flight request. Action buttons never prefetch. Use `Link` for GET anchors.
+
+The separate export is deliberate: Imba cannot switch a native tag's element
+based on props without introducing a wrapper. See [the full action-button guide](../README.md#action-buttons)
+for options and styling, and use `useForm` for richer form state and callbacks.
+
 ## Supported surface
 
 | API | Supported behavior | Differences and limits |
@@ -111,6 +131,7 @@ and try Students → Student reports in the fixture.
 | `useRemember` | Deep mutations of plain objects/arrays saved in history | Files become null; use serializable data |
 | `getPage`, `onPageChange` | Current page and subscription | `getPage()` can be null before mounting; unsubscribe when finished |
 | `Link` | GET navigation, native anchor behavior, hover/focus prefetch, cache duration/tags | No non-GET buttons or mount/click prefetch modes |
+| `LinkButton` | Native POST/PUT/PATCH/DELETE buttons, payloads, optional confirmation, automatic disabling, cancel | Separate from GET Link; no prefetch; same-origin actions |
 | `Head` | Titles and keyed head entries with cleanup | Browser-only |
 | `Deferred` | One/multiple props, fallback/rescue slots, lazy `content` callback | Ordinary Imba child expressions evaluate eagerly; no reloading indicator API |
 | `WhenVisible` | Partial reloads, buffer, repeat opt-in, retry, unmount cancellation | Supply data or reload params; remount when changing observer configuration |
@@ -118,7 +139,7 @@ and try Students → Student reports in the fixture.
 | `router`, `progress` | Re-exported from Inertia core | Core's own type definitions apply |
 
 Type exports include `Form`, `PrecognitiveForm`, `HttpForm`, `FormErrors`,
-`ValidationOptions`, `HttpOptions`, `LinkProps`, `DeferredProps`,
+`ValidationOptions`, `HttpOptions`, `LinkProps`, `LinkButtonProps`, `DeferredProps`,
 `WhenVisibleProps`, `LayoutDeclaration`, and `CreateInertiaAppOptions`. These are type-only exports.
 They do not add runtime helpers or components.
 
