@@ -83,7 +83,7 @@ const preview = useHttp({ name: '' })
 
 | API | Supported behavior | Differences and limits |
 | --- | --- | --- |
-| `createInertiaApp` | Browser mounting, async page resolver, custom setup, titles and progress | No SSR; one persistent layout at a time |
+| `createInertiaApp` | Browser mounting, async page resolver, custom setup, titles and progress | No SSR; single or nested layouts, with shared outer instances preserved |
 | `useForm` | Data, dirty tracking, defaults/reset, errors, transforms, verbs, progress/cancel, remembered state | Plain forms do not have Precognition-only methods; Inertia submissions return void |
 | Precognition | Bound endpoints, field-specific validation, touch/valid/invalid, debounce, file opt-in, all errors | Explicit triggers; no `validator()`, wildcard paths, or full upstream callbacks |
 | `useHttp` | JSON and multipart requests, callbacks, remembered drafts, optional Precognition | No optimistic updates or Inertia visit options; one active request per instance |
@@ -98,7 +98,7 @@ const preview = useHttp({ name: '' })
 
 Type exports include `Form`, `PrecognitiveForm`, `HttpForm`, `FormErrors`,
 `ValidationOptions`, `HttpOptions`, `LinkProps`, `DeferredProps`,
-`WhenVisibleProps`, and `CreateInertiaAppOptions`. These are type-only exports.
+`WhenVisibleProps`, `LayoutDeclaration`, and `CreateInertiaAppOptions`. These are type-only exports.
 They do not add runtime helpers or components.
 
 ## Checks

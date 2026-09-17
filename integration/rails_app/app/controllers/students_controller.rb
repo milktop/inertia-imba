@@ -8,6 +8,10 @@ class StudentsController < InertiaController
     @diagnostics = { generated_at: Time.current.iso8601 } if params[:diagnostics] == "1"
   end
 
+  def reports
+    @student_count = Student.count
+  end
+
   def create
     student = Student.new(student_params)
     precognition!(student)

@@ -354,8 +354,38 @@ OtherLayout`, or opt out with `export const layout = null`. A tag class's static
 Changing layouts or opting out unmounts the previous layout; returning later
 creates a fresh instance. Full browser reloads reset layout state too.
 
-This first version supports a single layout. Nested layouts and Inertia's advanced
-layout-prop APIs are not implemented yet.
+For nested layouts, export a flat array **outermost first**:
+
+```imba
+import AppLayout from '../../layouts/app.imba'
+import StudentsLayout from '../../layouts/students.imba'
+
+export const layout = [AppLayout, StudentsLayout]
+
+export default tag StudentsIndex
+    <self>
+        <h1> "Students"
+```
+
+Every layout declares `prop pageContent` and renders `<{pageContent}>`; the outer
+layout receives the next layout, and the innermost receives the page. All levels
+receive current page props, with omitted props cleared. The application `layout`
+callback and a tag's static `layout` property also accept arrays.
+
+Only the shared outer sequence is preserved: `[App, Students]` → `[App, Reports]`
+keeps App and replaces the section. Changing App recreates every inner layout.
+Leaving a section removes it; returning creates a fresh instance. Preservation
+is independent of the page's `preserveState` setting. Page declarations replace
+the application default rather than automatically appending to it, so include
+the app shell in the array when needed.
+
+A single tag still works. `null`, `false`, or `[]` opts out of all layouts. Arrays
+must contain tag classes, not nested arrays or empty entries. Inertia's advanced
+layout-prop APIs remain unsupported.
+
+Try Students → Student reports in the Rails fixture. The section note and
+navigation toggle survive those visits. Visit About and return to Students:
+the section resets, while the outer layout's click counter stays unchanged.
 
 ## Current scope
 
@@ -364,7 +394,7 @@ layout-prop APIs are not implemented yet.
 - Named page props assigned before Imba's setup/render lifecycle
 - A first `useForm` implementation
 
-SSR, nested layouts, and full Precognition parity remain future work.
+SSR and full Precognition parity remain future work.
 Multipart uploads now have browser and Rails regression coverage.
 
 ## Rails integration fixture

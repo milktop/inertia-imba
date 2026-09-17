@@ -88,3 +88,12 @@ select a larger text file, submit, and click Cancel upload while it is sending.
 The file remains selected so you can retry. Reset upload clears it and any errors.
 The browser suite automates these flows with a separate database; run
 `npm run test:browser` from the repository root.
+
+## Nested layout check
+
+On Students, type a Section note and increment the main layout counter. Open
+Student reports: the note and counter remain. Hide student navigation and use
+Return to student list: the toggle remains hidden. Visit About, then Students:
+the section note and toggle reset, but the main layout counter stays unchanged.
+Both student pages export `[AuthenticatedLayout, StudentsLayout]`; About uses
+the application's single default layout.

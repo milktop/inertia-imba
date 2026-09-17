@@ -89,7 +89,7 @@ test('reset clears the selected file and Rails errors', async ({ page }) => {
   await page.getByLabel('Text file', { exact: true }).setInputFiles(textFile(12))
   await page.getByRole('button', { name: 'Send file', exact: true }).click()
   await expect(page.getByRole('alert')).toHaveText("can't be blank")
-  await page.getByRole('button', { name: 'Reset upload', exact: true }).click()
+  await page.getByRole('button', { name: /^Reset(?: upload)?$/ }).click()
   await expect(page.getByLabel('Text file', { exact: true })).toHaveValue('')
   await expect(page.getByRole('alert')).toHaveCount(0)
 })

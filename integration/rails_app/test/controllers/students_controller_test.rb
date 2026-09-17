@@ -128,6 +128,13 @@ class StudentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal({ "name" => ["is too short (minimum is 4 characters)"] }, response.parsed_body.fetch("errors"))
   end
 
+  test "reports supplies the student total to the nested-layout page" do
+    get reports_students_url, headers: inertia_headers
+    assert_response :success
+    assert_equal "students/reports", response.parsed_body.fetch("component")
+    assert_equal Student.count, response.parsed_body.dig("props", "student_count")
+  end
+
   private
 
   def inertia_headers

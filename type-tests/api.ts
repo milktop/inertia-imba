@@ -94,8 +94,10 @@ const options: CreateInertiaAppOptions = {
 createInertiaApp(options)
 // @ts-expect-error SSR is not implemented
 createInertiaApp({ ...options, render: () => '' })
-// @ts-expect-error nested layouts are not implemented
-createInertiaApp({ ...options, layout: () => [PageTag] })
+createInertiaApp({ ...options, layout: () => [PageTag, PageTag] })
+createInertiaApp({ ...options, resolve: () => ({ default: PageTag, layout: [PageTag] as const }) })
+// @ts-expect-error layout arrays must be flat tag classes
+createInertiaApp({ ...options, layout: () => [PageTag, null] })
 const link: LinkProps = { href: '/students', prefetch: 'hover', cacheFor: '1m' }
 // @ts-expect-error Links are GET anchors, not form buttons
 const postLink: LinkProps = { href: '/students', method: 'post' }

@@ -1,5 +1,10 @@
 import { Head, Link, router, useForm } from '@inertiajs/imba'
 
+import AuthenticatedLayout from '../../layouts/authenticated.imba'
+import StudentsLayout from '../../layouts/students.imba'
+
+export const layout = [AuthenticatedLayout, StudentsLayout]
+
 export default tag StudentsIndex
 	prop students = []
 	prop query = ''

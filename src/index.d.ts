@@ -7,11 +7,13 @@ export type { HttpForm, HttpOptions } from './http.js'
 
 /** Browser-only setup. The resolver may return a tag class or a page module. */
 export function createInertiaApp(options: CreateInertiaAppOptions): Promise<void>
+/** Outermost first; [] opts out of the default layout. */
+export type LayoutDeclaration = TagConstructor | readonly TagConstructor[] | null | false
 export interface TagConstructor {
   new (...args: any[]): object
-  layout?: TagConstructor | null | false
+  layout?: LayoutDeclaration
 }
-export type PageComponent = TagConstructor | { default: TagConstructor; layout?: TagConstructor | null | false }
+export type PageComponent = TagConstructor | { default: TagConstructor; layout?: LayoutDeclaration }
 export interface AppProps {
   initialPage: Page
   initialComponent: PageComponent
@@ -25,7 +27,7 @@ export interface CreateInertiaAppOptions {
   dev?: boolean
   title?: (title: string, page: Page | null) => string
   progress?: ProgressOptions | false
-  layout?: (name: string, page: Page) => TagConstructor | null | false | undefined
+  layout?: (name: string, page: Page) => LayoutDeclaration | undefined
   setup?: (context: { el: HTMLElement; App: TagConstructor; props: AppProps }) => unknown | Promise<unknown>
 }
 
