@@ -395,3 +395,68 @@ prop if it needs message-specific behavior. JavaScript helpers can read
 and the next full Inertia response replaces it with `{}`. This is ordinary shared
 page data, not Inertia's separate top-level flash API. Partial reloads only refresh
 requested props, so include `flash` when using `only` if it needs refreshing.
+
+## Deferred data, visibility loading, and polling
+
+`Deferred` displays its fallback until every named prop is available. Inertia core
+fetches Rails `InertiaRails.defer` props automatically. Use a `content` callback
+when accessing missing data: Imba evaluates ordinary child expressions eagerly.
+The callback receives the current page props only after the data arrives.
+
+```imba
+import { Deferred, WhenVisible, usePoll } from '@inertiajs/imba'
+
+export default tag Dashboard
+    def summaryContent props
+        <p> "Students: {props.summary.total}"
+
+    <self>
+        <Deferred data="summary" content=summaryContent>
+            <p slot="fallback"> "Loading summary…"
+            <p slot="rescue"> "Summary could not be loaded."
+
+        <WhenVisible data="details" buffer=100>
+            <p slot="fallback"> "Waiting until visible…"
+            <p> "Details are ready."
+```
+
+Both accept a prop name or an array of names. `WhenVisible` requests those props
+when its wrapper approaches the viewport (`buffer` is pixels). Pair it with
+Rails `InertiaRails.optional` to skip the initial payload. It loads once by
+default; `always=true` permits another load on subsequent visibility entries.
+Use `params` for reload options, or `content` for lazy rendering as above.
+`data` overrides `params.only`. Its `retry()` method retries an unsuccessful load.
+
+Start polling in a component's mount hook and destroy it on unmount:
+
+```imba
+    def mount
+        poll = usePoll(2000, { only: ['checked_at'] })
+
+    def unmount
+        poll.destroy! if poll
+```
+
+The returned handle also exposes `start()` and `stop()`. The third argument
+accepts core polling options such as `{ autoStart: false, keepAlive: true }`.
+Polling is automatically destroyed when the page is replaced and is throttled
+in background tabs by Inertia core. Explicit cleanup also covers components
+removed while their page remains mounted.
+
+Visit `/loading` in the Rails fixture (linked from About) to try all three.
+
+## Browser regression tests
+
+After installing both projects' dependencies and preparing Rails, run:
+
+```sh
+npx playwright install chromium
+npm run test:browser
+```
+
+The suite builds and starts its own Rails server on port 3111 with a separate
+`storage/browser-test.sqlite3` database. Set `E2E_PORT` to change the port.
+On Macs unsupported by bundled Chromium, use installed Google Chrome:
+`PLAYWRIGHT_CHANNEL=chrome npm run test:browser`.
+GitHub Actions runs unit tests, Rails tests, frontend builds, and browser tests;
+failed browser runs upload screenshots and traces.

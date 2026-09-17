@@ -1,4 +1,4 @@
-import { useHttp } from '@inertiajs/imba'
+import { Link, useHttp } from '@inertiajs/imba'
 
 export default tag AboutPage
 	prop adapter_version
@@ -25,6 +25,7 @@ export default tag AboutPage
 			<h1> "About this fixture"
 			<p> "Adapter version {adapter_version}"
 			<p> "Navigating here swaps the page class and keeps the shared layout mounted."
+			<Link href="/loading"> "Loading examples"
 			<button @click=count++> "Click"
 
 		<article>

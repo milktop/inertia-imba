@@ -10,4 +10,10 @@ class PagesController < InertiaController
   def forms
   end
 
+  def loading
+    @summary = InertiaRails.defer { { total: Student.count } }
+    @details = InertiaRails.optional { { message: "This section was loaded when it became visible." } }
+    @checked_at = Time.current.iso8601(3)
+  end
+
 end

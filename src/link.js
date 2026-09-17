@@ -39,12 +39,12 @@ export function createLinkPrefetch(anchor, options, config, router) {
     cancel,
     schedule() {
       cancel()
-      if (![true, 'hover'].includes(config().prefetch) || !linkUrl(anchor)) return
+      if (![true, 'prefetch', 'hover'].includes(config().prefetch) || !linkUrl(anchor)) return
       timer = setTimeout(() => {
         timer = null
         const settings = config()
         const url = linkUrl(anchor)
-        if (!url || ![true, 'hover'].includes(settings.prefetch)) return
+        if (!url || ![true, 'prefetch', 'hover'].includes(settings.prefetch)) return
         router.prefetch(url, { ...options(), method: 'get' }, {
           cacheFor: settings.cacheFor ?? 30000,
           cacheTags: settings.cacheTags ?? [],

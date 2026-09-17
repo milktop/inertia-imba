@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   get "about", to: "pages#about"
   get "forms", to: "pages#forms"
+  get "loading", to: "pages#loading"
 
   post "http-preview", to: "http_previews#create", as: :http_preview
 

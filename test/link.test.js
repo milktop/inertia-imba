@@ -41,7 +41,7 @@ test('prefetch waits for intent, forwards cache options, and cancels on leave/un
   t.mock.timers.enable({ apis: ['setTimeout'] })
   const calls = []
   const { anchor } = click()
-  const settings = { prefetch: true, cacheFor: '1m', cacheTags: ['students'] }
+  const settings = { prefetch: 'prefetch', cacheFor: '1m', cacheTags: ['students'] }
   const prefetch = createLinkPrefetch(anchor, () => ({ only: ['students'] }), () => settings, {
     prefetch: (...args) => calls.push(args),
   })

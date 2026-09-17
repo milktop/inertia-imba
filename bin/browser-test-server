@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../integration/rails_app"
+
+# CI provides Ruby; local macOS development uses the fixture's pinned version.
+for chruby_script in /opt/homebrew/opt/chruby/share/chruby/chruby.sh /usr/local/share/chruby/chruby.sh; do
+  if [ -f "$chruby_script" ]; then
+    set +u
+    source "$chruby_script"
+    chruby "$(cat .ruby-version)"
+    set -u
+    break
+  fi
+done
+
+export RAILS_ENV=test
+export DATABASE_URL="sqlite3:$PWD/storage/browser-test.sqlite3"
+bin/rails db:prepare db:seed
+npm run build -- --mode test
+exec bin/rails server -b 127.0.0.1 -p "${E2E_PORT:-3111}" -P tmp/pids/browser-test.pid

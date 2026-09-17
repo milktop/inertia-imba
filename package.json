@@ -16,7 +16,8 @@
   "scripts": {
     "build": "imba build src/createInertiaApp.imba --esm --outdir dist",
     "test": "npm run build && node --test",
-    "test:integration": "npm --prefix integration/rails_app run build"
+    "test:integration": "npm --prefix integration/rails_app run build",
+    "test:browser": "playwright test"
   },
   "peerDependencies": {
     "@inertiajs/core": "^3.7.1",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@inertiajs/core": "^3.7.1",
+    "@playwright/test": "^1.63.0",
     "imba": "^2.0.0-alpha.253"
   },
   "dependencies": {

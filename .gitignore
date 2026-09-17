@@ -8,3 +8,5 @@ inertia-imba-prototype.zip
 !.env.example
 **/config/master.key
 **/config/credentials/*.key
+playwright-report/
+test-results/
