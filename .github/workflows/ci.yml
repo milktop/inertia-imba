@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -10,7 +11,11 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,22 +32,28 @@ jobs:
           working-directory: integration/rails_app
       - run: npm ci
       - run: npm ci --prefix integration/rails_app
-      - run: npm test
-      - run: npm run test:types
-      - run: npm run test:integration
+      - if: matrix.browser == 'chromium'
+        run: npm test
+      - if: matrix.browser == 'chromium'
+        run: npm run test:types
+      - if: matrix.browser == 'chromium'
+        run: npm run test:integration
       - name: Rails tests
+        if: matrix.browser == 'chromium'
         working-directory: integration/rails_app
         env:
           RAILS_ENV: test
         run: |
           bin/rails db:prepare
           bin/rails test
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run test:browser
+        env:
+          PLAYWRIGHT_BROWSER: ${{ matrix.browser }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-results
+          name: browser-test-results-${{ matrix.browser }}
           path: |
             playwright-report/
             test-results/

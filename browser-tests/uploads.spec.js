@@ -25,7 +25,8 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/uploads')
 })
 
-test('multipart upload reports real progress, reaches Rails, and resets both inputs', async ({ page }) => {
+test('multipart upload reports real progress, reaches Rails, and resets both inputs', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Precise upload throttling requires Chromium CDP')
   await page.getByLabel('Title', { exact: true }).fill('Class notes')
   await page.getByLabel('Text file', { exact: true }).setInputFiles(textFile())
   const client = await throttleUploads(page)
@@ -64,7 +65,8 @@ test('Rails rejects invalid uploads, preserves the draft, and accepts a correcte
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
 
-test('cancelling an in-flight upload clears progress and permits retry', async ({ page }) => {
+test('cancelling an in-flight upload clears progress and permits retry', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Precise upload throttling requires Chromium CDP')
   await page.getByLabel('Title', { exact: true }).fill('Retry notes')
   await page.getByLabel('Text file', { exact: true }).setInputFiles(textFile())
   const client = await throttleUploads(page)

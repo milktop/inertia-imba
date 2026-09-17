@@ -86,9 +86,10 @@ Supported visit props: `replace`, `preserveState`, `preserveScroll`, `only`,
 `download`, and accessibility attributes remain available. Query data belongs
 in `href`, so opening a new tab follows the same URL.
 
-This first version is for GET navigation. Use `useForm` or the exported router
-for POST/PATCH/DELETE actions. Visit callbacks, loading indicators,
-and an `as`/button variant are not implemented yet.
+Use `Link` for GET navigation and [LinkButton](#action-buttons) for
+POST/PUT/PATCH/DELETE actions with automatic disabling and optional confirmation.
+Use `useForm` when you also need editable fields and form errors. `Link` does not
+provide an `as` prop or visit callbacks.
 
 Enable prefetching explicitly with `<Link href="/students" prefetch=true>`.
 `prefetch="hover"` is equivalent. Hover or keyboard focus starts a request after
@@ -183,6 +184,26 @@ title and child markup are reflected automatically. The source tag is hidden.
 
 `createInertiaApp({ title: (title, page) => ... })` can format titles globally.
 Head currently supports client rendering only; SSR remains unsupported.
+
+## SSR: investigated and parked
+
+SSR is a possible future feature, but is **not currently supported or enabled**.
+The [runnable SSR experiments](experiments/ssr/README.md) demonstrate initial
+HTML, CSS and a prefilled input without JavaScript, followed by working Inertia
+navigation and nested persistent layouts in Chrome.
+
+The working prototype requires experimental Imba runtime fixes for escaping,
+input bindings and component lifecycle handling. It replaces the initial page
+tree when JavaScript starts rather than preserving it through hydration; input
+typed before startup is lost. Server-side Head collection, request isolation,
+Rails integration and broader browser/control testing remain unfinished.
+
+The decision is to park this work until there is a concrete need, most likely
+public, content-heavy pages where crawlers and initial content delivery matter.
+That use case may make a limited SSR version with a client remount worthwhile;
+full DOM-preserving hydration remains a separate, larger task. See the
+[feasibility notes](docs/changes/2026-09-17-ssr-feasibility.md) for the investigation
+history and the experiment README for commands, findings and caveats.
 
 ## Precognition
 
@@ -500,8 +521,14 @@ The suite builds and starts its own Rails server on port 3111 with a separate
 `storage/browser-test.sqlite3` database. Set `E2E_PORT` to change the port.
 On Macs unsupported by bundled Chromium, use installed Google Chrome:
 `PLAYWRIGHT_CHANNEL=chrome npm run test:browser`.
-GitHub Actions runs unit tests, Rails tests, frontend builds, and browser tests;
-failed browser runs upload screenshots and traces.
+GitHub Actions runs the browser suite in Chromium, Firefox and WebKit on Linux,
+plus unit tests, Rails tests and frontend/type checks. Select an engine locally
+with `PLAYWRIGHT_BROWSER=firefox npm run test:browser` (or `webkit`) after
+installing it with `npx playwright install firefox webkit`. Current Playwright
+builds require a supported OS; installed Chrome can be used on this older Mac.
+The two precisely throttled upload-progress/cancellation tests require Chromium
+CDP; ordinary multipart validation/retry/reset tests run in every engine. Failed
+browser runs upload separate screenshots and traces for each engine.
 
 ## File uploads
 

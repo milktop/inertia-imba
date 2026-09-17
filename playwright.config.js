@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
+const browserName = process.env.PLAYWRIGHT_BROWSER || 'chromium'
+
 const port = process.env.E2E_PORT || '3111'
 
 export default defineConfig({
@@ -11,9 +13,9 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
-    browserName: 'chromium',
+    browserName,
     // Allows local Chrome on hosts too old for bundled Chromium.
-    channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
+    channel: browserName === 'chromium' ? process.env.PLAYWRIGHT_CHANNEL || undefined : undefined,
     viewport: { width: 1280, height: 720 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
