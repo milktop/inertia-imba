@@ -575,3 +575,15 @@ Use explicit classes when you want the same styles on both.
 Use `useForm` when you need editable fields, form errors, or submission callbacks.
 Visit About → Action buttons in the Rails fixture for session-only examples that
 do not change student records.
+
+For a model toggle, the Students fixture uses a standalone action button:
+
+```imba
+<LinkButton href="/students/{student.id}/toggle_active" method="patch" preserveScroll=true>
+    student.active ? 'Deactivate' : 'Activate'
+```
+
+Rails handles the toggle and redirects back; updated page props change the label.
+`LinkButton` sets `type="button"` internally and does not require a form. The
+fixture tests both directions, persistence after refresh, and keeping a draft and
+filter while the request runs.

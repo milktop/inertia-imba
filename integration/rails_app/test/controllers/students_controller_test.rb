@@ -135,6 +135,30 @@ class StudentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Student.count, response.parsed_body.dig("props", "student_count")
   end
 
+  test "toggle active persists both directions without changing student details" do
+    student = Student.create!(name: "Toggle Student", email: "toggle-controller@example.test")
+    assert student.active?
+    patch toggle_active_student_url(student), params: { query: "Toggle" }, headers: inertia_headers
+    assert_response :see_other
+    assert_redirected_to students_url(query: "Toggle")
+    assert_not student.reload.active?
+    assert_equal "Toggle Student", student.name
+    assert_equal "toggle-controller@example.test", student.email
+    follow_redirect!(headers: inertia_headers)
+    assert_equal false, response.parsed_body.fetch("props").fetch("students").find { |item| item["id"] == student.id }.fetch("active")
+
+    patch toggle_active_student_url(student), headers: inertia_headers
+    assert_response :see_other
+    assert student.reload.active?
+  end
+
+  test "toggle active cannot be triggered by a GET request" do
+    student = Student.create!(name: "Toggle Student", email: "toggle-get@example.test")
+    get toggle_active_student_url(student), headers: inertia_headers
+    assert_response :not_found
+    assert student.reload.active?
+  end
+
   private
 
   def inertia_headers

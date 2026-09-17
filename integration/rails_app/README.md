@@ -97,3 +97,15 @@ Return to student list: the toggle remains hidden. Visit About, then Students:
 the section note and toggle reset, but the main layout counter stays unchanged.
 Both student pages export `[AuthenticatedLayout, StudentsLayout]`; About uses
 the application's single default layout.
+
+## Student active toggle
+
+Each student now has an active flag (true by default). On Students, click
+Deactivate or Activate beside a student. A standalone LinkButton sends PATCH to
+`/students/:id/toggle_active`; Rails flips and saves the flag, then redirects back
+with the current filter. The button disables while waiting, and the current form
+draft stays intact. Refresh to verify the change was saved.
+
+LinkButton sets `type="button"` internally and needs no form. The session-only
+Action buttons examples also sit outside forms. The browser regression associates
+one button with a test-only form to check that it never submits that form.

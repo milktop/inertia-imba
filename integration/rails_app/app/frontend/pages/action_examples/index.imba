@@ -14,7 +14,7 @@ export default tag ActionExamples
 		<p> "These buttons record an example action in your session. They do not change student records."
 		<Link href="/about"> "Back to About"
 
-		<form @submit.prevent=(console.error('Unexpected form submission'))>
+		<div>
 			<LinkButton.action-button href="/action_examples" data={ action_demo: { label: 'Created' } } [c:rgb(80,80,80)]> "POST example"
 			<LinkButton href="/action_examples/demo" method="patch" data={ action_demo: { label: 'Updated' } }> "PATCH example"
 			<LinkButton href="/action_examples/demo" method="delete" data={ action_demo: { label: 'Deleted' } } confirm="Delete this example?"> "DELETE example"

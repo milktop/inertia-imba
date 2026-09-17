@@ -9,11 +9,23 @@ test('actions are native styled buttons and send POST/PATCH data without submitt
   const button = page.getByRole('button', { name: 'POST example', exact: true })
   expect(await button.evaluate(node => node.tagName)).toBe('BUTTON')
   await expect(button).toHaveAttribute('type', 'button')
-  await expect(button).toHaveCSS('color', 'rgb(80, 80, 80)')
+  expect(await button.evaluate(node => getComputedStyle(node).color)).not.toBe(
+    await button.evaluate(node => getComputedStyle(node.parentElement).color),
+  )
   await expect(button).toHaveCSS('border-radius', '9px')
   let formSubmits = 0
   await page.exposeFunction('recordFormSubmit', () => formSubmits++)
-  await page.locator('form').evaluate(form => form.addEventListener('submit', () => window.recordFormSubmit()))
+  // The real example is outside a form. Associate it with a test-only form to
+  // guard against the browser's default submit-button behavior without moving
+  // the Imba component (which would trigger its unmount/mount lifecycle).
+  expect(await button.evaluate(node => node.closest('form'))).toBeNull()
+  await page.evaluate(() => {
+    const form = document.createElement('form')
+    form.id = 'button-type-regression'
+    form.addEventListener('submit', event => { event.preventDefault(); window.recordFormSubmit() })
+    document.body.appendChild(form)
+  })
+  await button.evaluate(node => node.setAttribute('form', 'button-type-regression'))
   await button.click()
   await expect(page.getByTestId('last-action')).toHaveText('POST: Created')
   await expect(button).toBeEnabled()

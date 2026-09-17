@@ -3,9 +3,15 @@ class StudentsController < InertiaController
     students = Student.order(:name)
     students = students.where("name LIKE ?", "%#{Student.sanitize_sql_like(params[:query])}%") if params[:query].present?
 
-    @students = students.as_json(only: %i[id name email])
+    @students = students.as_json(only: %i[id name email active])
     @query = params[:query].to_s
     @diagnostics = { generated_at: Time.current.iso8601 } if params[:diagnostics] == "1"
+  end
+
+  def toggle_active
+    student = Student.find(params[:id])
+    student.toggle_active!
+    redirect_to students_path(query: params[:query].presence), status: :see_other
   end
 
   def reports
