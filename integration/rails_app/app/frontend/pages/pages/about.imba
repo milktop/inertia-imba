@@ -1,4 +1,4 @@
-import { Link, useHttp } from '@inertiajs/imba'
+import { Link, useHttp } from '@milktop/inertia-imba'
 
 export default tag AboutPage
 	prop adapter_version

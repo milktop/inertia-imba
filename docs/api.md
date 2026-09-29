@@ -1,7 +1,7 @@
 # Adapter API and editor hints
 
 The package includes TypeScript declarations for its root import and the
-`@inertiajs/imba/form` and `@inertiajs/imba/http` subpaths. Names follow Inertia's
+`@milktop/inertia-imba/form` and `@milktop/inertia-imba/http` subpaths. Names follow Inertia's
 other adapters: `isDirty`, `processing`, `recentlySuccessful`, and
 `resetAndClearErrors` retain their familiar spelling.
 
@@ -16,7 +16,7 @@ Data is inferred from the initial object or factory. For nullable uploads or a
 shared data interface, provide an explicit type:
 
 ```ts
-import { useForm } from '@inertiajs/imba'
+import { useForm } from '@milktop/inertia-imba'
 
 interface StudentDraft {
   name: string
@@ -57,7 +57,7 @@ forms of `useForm` also enable Precognition. Validation is explicitly triggered;
 second generic describes the JSON response:
 
 ```ts
-import { useHttp } from '@inertiajs/imba'
+import { useHttp } from '@milktop/inertia-imba'
 
 const preview = useHttp<{ name: string }, { message: string }>({ name: '' })
 const result = await preview.post('/http-preview')
@@ -74,9 +74,9 @@ JavaScript supports the same hints through JSDoc:
 
 ```js
 // @ts-check
-import { useHttp } from '@inertiajs/imba'
+import { useHttp } from '@milktop/inertia-imba'
 
-/** @type {import('@inertiajs/imba').HttpForm<{ name: string }, { message: string }>} */
+/** @type {import('@milktop/inertia-imba').HttpForm<{ name: string }, { message: string }>} */
 const preview = useHttp({ name: '' })
 ```
 
@@ -120,7 +120,7 @@ and try Students → Student reports in the fixture.
 ## Action buttons
 
 ```imba
-import { LinkButton } from '@inertiajs/imba'
+import { LinkButton } from '@milktop/inertia-imba'
 
 <LinkButton href="/students/123" method="delete" confirm="Delete this student?" [c:gray4]>
     "Delete student"

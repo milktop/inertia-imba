@@ -61,7 +61,7 @@ the entrypoints directory: Vite Ruby classifies unknown extensions as static
 assets. The Vite config deduplicates and prebundles the Imba and Inertia runtimes
 because generated Imba imports are not visible to the initial dependency scan.
 
-The fixture uses `@inertiajs/imba: file:../..`, so changes to the adapter can
+The fixture uses `@milktop/inertia-imba: file:../..`, so changes to the adapter can
 be tested without publishing an npm package.
 
 It also includes a deliberately narrow local Imba Vite transform. The latest

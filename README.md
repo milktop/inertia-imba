@@ -1,6 +1,19 @@
 # Inertia.js Imba adapter (prototype)
 
-An experimental client-side adapter for Inertia 3 and Imba 2.
+An experimental client-side adapter for Inertia 3 and Imba 2. This is an
+unofficial community package, not maintained by the Inertia.js team.
+
+## Install
+
+Install from a GitHub tag (the package is not published to npm):
+
+```sh
+npm install imba @inertiajs/core github:milktop/inertia-imba#v0.1.0
+```
+
+This adds `"@milktop/inertia-imba": "github:milktop/inertia-imba#v0.1.0"` to
+`package.json`. For local development against a checkout, use
+`"file:/path/to/inertia-imba"` instead.
 
 ## Editor hints and API reference
 
@@ -23,7 +36,7 @@ import '../inertia.imba'
 Then create `app/frontend/inertia.imba`:
 
 ```imba
-import { createInertiaApp } from '@inertiajs/imba'
+import { createInertiaApp } from '@milktop/inertia-imba'
 
 createInertiaApp({
   resolve: do(name)
@@ -69,7 +82,7 @@ export default tag StudentsIndex
 not require a globally named lowercase tag or Imba's `route-to` router.
 
 ```imba
-import { Link } from '@inertiajs/imba'
+import { Link } from '@milktop/inertia-imba'
 
 <Link href="/students"> "Students"
 <Link href="/students?diagnostics=1" preserveState=true preserveScroll=true> "Details"
@@ -102,7 +115,7 @@ and `usePrefetch` are not implemented yet.
 ## Forms
 
 ```imba
-import { useForm } from '@inertiajs/imba'
+import { useForm } from '@milktop/inertia-imba'
 
 export tag StudentForm
   form = useForm({ name: '', email: '' })
@@ -178,7 +191,7 @@ Use `router.remember`/`router.restore` explicitly for persistent-layout state.
 ## Head
 
 ```imba
-import { Head } from '@inertiajs/imba'
+import { Head } from '@milktop/inertia-imba'
 
 <Head title="Students">
   <meta head-key="description" name="description" content="Manage students.">
@@ -284,7 +297,7 @@ upstream callback surface are not implemented. `useHttp` still requires explicit
 an Inertia page or changing the URL. Fields bind just like `useForm`:
 
 ```imba
-import { useHttp } from '@inertiajs/imba'
+import { useHttp } from '@milktop/inertia-imba'
 
 export default tag GreetingPreview
   preview = useHttp({ name: '' })
@@ -514,7 +527,7 @@ when accessing missing data: Imba evaluates ordinary child expressions eagerly.
 The callback receives the current page props only after the data arrives.
 
 ```imba
-import { Deferred, WhenVisible, usePoll } from '@inertiajs/imba'
+import { Deferred, WhenVisible, usePoll } from '@milktop/inertia-imba'
 
 export default tag Dashboard
     def summaryContent props
@@ -618,7 +631,7 @@ retry, and native input reset. Rails tests also cover the size limit.
 Use `LinkButton` for POST, PUT, PATCH, or DELETE actions without a full form:
 
 ```imba
-import { LinkButton } from '@inertiajs/imba'
+import { LinkButton } from '@milktop/inertia-imba'
 
 <LinkButton.action-button href="/students/123" method="delete" confirm="Delete this student?" [c:gray4]>
     "Delete student"
@@ -669,7 +682,7 @@ Imba supports named bindings. Use `bind:processing`, not bare `bind` (which bind
 `data`, the request payload):
 
 ```imba
-import { LinkButton } from '@inertiajs/imba'
+import { LinkButton } from '@milktop/inertia-imba'
 
 export default tag ExamplePage
     updating = false

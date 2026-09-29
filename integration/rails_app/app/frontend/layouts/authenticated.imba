@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/imba'
+import { Head, Link } from '@milktop/inertia-imba'
 
 export default tag AuthenticatedLayout
 	prop pageContent
@@ -8,12 +8,15 @@ export default tag AuthenticatedLayout
 
 	<self.authenticated-layout>
 		<Head title="Imba test app">
+
 		<header>
 			<strong> "Inertia + Imba"
-			<button @click=(layoutClicks++)> "Layout clicks: {layoutClicks}"
+			<button @click=layoutClicks++> "Layout clicks: {layoutClicks}"
 			<nav>
-				<Link href="/students" prefetch=true> "Students"
-				<Link href="/about" prefetch=true> "About"
+				<Link href="/" prefetch> "Home"
+				<Link href="/students" prefetch> "Students"
+				<Link href="/about" prefetch> "About"
+
 		<main>
 			if flash and flash.notice
 				<p.flash-notice role="status"> flash.notice

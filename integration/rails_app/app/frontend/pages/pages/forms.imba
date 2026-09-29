@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/imba'
+import { Head, Link, useForm } from '@milktop/inertia-imba'
 
 export default tag FormsPage
 	form = useForm('Forms/Nested', {

@@ -1,10 +1,10 @@
 import {
   useForm, useHttp, useRemember, usePoll, getPage, onPageChange,
   createInertiaApp, Link, LinkButton, Head, Deferred, WhenVisible, router, progress,
-} from '@inertiajs/imba'
-import { useForm as subpathForm } from '@inertiajs/imba/form'
-import { useHttp as subpathHttp, requestHeaders } from '@inertiajs/imba/http'
-import type { Form, PrecognitiveForm, HttpForm, LinkProps, CreateInertiaAppOptions } from '@inertiajs/imba'
+} from '@milktop/inertia-imba'
+import { useForm as subpathForm } from '@milktop/inertia-imba/form'
+import { useHttp as subpathHttp, requestHeaders } from '@milktop/inertia-imba/http'
+import type { Form, PrecognitiveForm, HttpForm, LinkProps, CreateInertiaAppOptions } from '@milktop/inertia-imba'
 
 interface Student { name: string; email: string; profile: { age: number }; attachment: File | null }
 const data: Student = { name: '', email: '', profile: { age: 20 }, attachment: null }
@@ -134,6 +134,6 @@ actionButton.confirm = () => true
 
 // Processing is a bindable output, not a command to start or finish a request.
 actionButton.processing = false
-const validationEvent = new CustomEvent<import('@inertiajs/imba').LinkButtonErrorDetail>('error', { detail: { errors: { name: ['Required'] } } })
+const validationEvent = new CustomEvent<import('@milktop/inertia-imba').LinkButtonErrorDetail>('error', { detail: { errors: { name: ['Required'] } } })
 const actionErrors: Record<string, string | string[]> = validationEvent.detail.errors
 void actionErrors

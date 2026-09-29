@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/imba'
+import { Link } from '@milktop/inertia-imba'
 
 export default tag StudentsLayout
 	prop pageContent

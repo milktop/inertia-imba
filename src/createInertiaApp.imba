@@ -18,7 +18,7 @@ export default def createInertiaApp(options = {})
 	let dev = options.dev === undefined ? import.meta.env && import.meta.env.DEV : options.dev
 
 	if typeof window == 'undefined'
-		throw new Error('@inertiajs/imba does not support SSR yet')
+		throw new Error('@milktop/inertia-imba does not support SSR yet')
 
 	exposeInterceptors! if dev
 	let el = document.getElementById(id)

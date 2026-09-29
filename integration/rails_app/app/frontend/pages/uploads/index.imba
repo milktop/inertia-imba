@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/imba'
+import { Head, Link, useForm } from '@milktop/inertia-imba'
 
 export default tag UploadsPage
 	prop receipt
@@ -61,7 +61,7 @@ export default tag UploadsPage
 				<p> "Sending upload…"
 				<button type="button" @click=form.cancel!> "Cancel upload"
 			<button type="submit" disabled=form.processing> "Send file"
-			<button type="button" disabled=form.processing @click=reset!> "Reset upload"
+			<button type="button" disabled=form.processing @click=reset> "Reset"
 
 		if cancelled
 			<p role="status"> "Upload cancelled. You can retry."

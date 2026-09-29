@@ -1,9 +1,14 @@
 {
-  "name": "@inertiajs/imba",
-  "version": "0.0.1",
+  "name": "@milktop/inertia-imba",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Experimental Imba adapter for Inertia.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/milktop/inertia-imba.git"
+  },
   "exports": {
     ".": {
       "types": "./src/index.d.ts",

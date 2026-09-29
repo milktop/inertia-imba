@@ -8,6 +8,10 @@ class StudentsController < InertiaController
     @diagnostics = { generated_at: Time.current.iso8601 } if params[:diagnostics] == "1"
   end
 
+  def show
+    @student = Student.find(params[:id])
+  end
+
   def toggle_active
     student = Student.find(params[:id])
     student.toggle_active!
@@ -26,6 +30,15 @@ class StudentsController < InertiaController
       redirect_to students_path, notice: "Student created"
     else
       redirect_to students_path, inertia: { errors: student.errors.to_hash }
+    end
+  end
+
+  def update
+    student = Student.find(params[:id])
+    if student.update(student_params)
+      redirect_back_or_to students_path, notice: "Student updated"
+    else
+      redirect_back_or_to students_path, inertia: { errors: student.errors.to_hash }
     end
   end
 

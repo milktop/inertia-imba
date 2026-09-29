@@ -1,4 +1,4 @@
-import { Head, Link, LinkButton, router, useForm } from '@inertiajs/imba'
+import { Head, Link, LinkButton, router, useForm } from '@milktop/inertia-imba'
 
 import AuthenticatedLayout from '../../layouts/authenticated.imba'
 import StudentsLayout from '../../layouts/students.imba'
@@ -56,9 +56,11 @@ export default tag StudentsIndex
 				<Link href="/students" preserveState=true> "Remove diagnostics prop"
 				<ul> for student in students
 					<li data-student-id=student.id>
-						<span> "{student.name} — {student.email} "
+						<Link href="/students/{student.id}"> "{student.name} — {student.email} "
 						<span data-testid="student-status"> student.active ? 'Active' : 'Inactive'
-						<LinkButton href="/students/{student.id}/toggle_active" method="patch" data={ query } preserveScroll=true optimistic=optimisticToggle(student.id) aria-pressed=student.active aria-label="Toggle active for {student.name}">
+						<LinkButton href="/students/{student.id}/toggle_active" method="patch" data={ query } preserveScroll=true optimistic=optimisticToggle(student.id)
+							aria-pressed=student.active
+							aria-label="Toggle active for {student.name}">
 							student.active ? 'Deactivate' : 'Activate'
 
 			<article>

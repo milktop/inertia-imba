@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :students, only: %i[index create] do
+  resources :students, only: %i[index show create update] do
     get :reports, on: :collection
     patch :toggle_active, on: :member
   end

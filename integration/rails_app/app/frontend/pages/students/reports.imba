@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/imba'
+import { Head, Link } from '@milktop/inertia-imba'
 import AuthenticatedLayout from '../../layouts/authenticated.imba'
 import StudentsLayout from '../../layouts/students.imba'
 

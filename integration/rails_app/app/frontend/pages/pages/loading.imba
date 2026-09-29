@@ -1,4 +1,4 @@
-import { Deferred, Head, Link, WhenVisible, usePoll } from '@inertiajs/imba'
+import { Deferred, Head, Link, WhenVisible, usePoll } from '@milktop/inertia-imba'
 
 export default tag LoadingPage
 	prop checked_at

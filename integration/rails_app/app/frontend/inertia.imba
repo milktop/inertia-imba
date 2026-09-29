@@ -1,5 +1,5 @@
 import AuthenticatedLayout from './layouts/authenticated.imba'
-import { createInertiaApp } from '@inertiajs/imba'
+import { createInertiaApp } from '@milktop/inertia-imba'
 import './styles/style.imba'
 
 let pages = import.meta.glob('./pages/**/*.imba', { eager: true })

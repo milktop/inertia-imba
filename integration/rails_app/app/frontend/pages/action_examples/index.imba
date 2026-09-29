@@ -1,4 +1,4 @@
-import { Head, Link, LinkButton } from '@inertiajs/imba'
+import { Head, Link, LinkButton } from '@milktop/inertia-imba'
 
 export default tag ActionExamples
 	prop last_action
@@ -21,7 +21,7 @@ export default tag ActionExamples
 		<Link href="/about"> "Back to About"
 
 		<div>
-			<LinkButton.action-button href="/action_examples" data={ action_demo: { label: 'Created' } } [c:rgb(80,80,80)]> "POST example"
+			<LinkButton.action-button href="/action_examples" data={ action_demo: { label: 'Created' } } [bg:yellow5 c:yellow9]> "POST example"
 			<LinkButton href="/action_examples/demo" method="patch" data={ action_demo: { label: 'Updated' } }> "PATCH example"
 			<LinkButton href="/action_examples/demo" method="delete" data={ action_demo: { label: 'Deleted' } } confirm="Delete this example?"> "DELETE example"
 			<LinkButton href="/action_examples" data={ action_demo: { label: '' } }> "Validation example"
