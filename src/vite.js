@@ -5,7 +5,7 @@ import { compile } from 'imba/compiler'
 // modules while the upstream packages converge again.
 export default function imbaPlugin() {
   return {
-    name: 'inertia-imba-fixture',
+    name: 'inertia-imba',
     enforce: 'pre',
 
     transform(source, id) {

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import RubyPlugin from 'vite-plugin-ruby'
-import imbaPlugin from './config/imba-vite-plugin.js'
+import imbaPlugin from '@milktop/inertia-imba/vite'
 
 export default defineConfig({
   plugins: [RubyPlugin(), imbaPlugin()],

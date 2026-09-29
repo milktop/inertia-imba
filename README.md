@@ -24,7 +24,26 @@ Run `npm run test:types` to check the declarations and usage examples.
 
 ## Rails setup
 
-Keep using `inertia_rails` on the server. Put Imba pages in
+Keep using `inertia_rails` on the server. Add the bundled Imba compiler plugin
+to `vite.config.js`. It compiles your pages and the adapter's own `.imba` source
+(the published `vite-plugin-imba` does not support current Imba alphas):
+
+```js
+import { defineConfig } from 'vite'
+import RubyPlugin from 'vite-plugin-ruby'
+import imba from '@milktop/inertia-imba/vite'
+
+export default defineConfig({
+  plugins: [RubyPlugin(), imba()],
+  optimizeDeps: { include: ['imba', 'imba/runtime', '@inertiajs/core'] },
+  resolve: { dedupe: ['imba', '@inertiajs/core'] },
+})
+```
+
+`optimizeDeps` pre-bundles imports that the Imba transform adds after Vite's
+initial scan; `dedupe` keeps one Imba runtime when the adapter is linked locally.
+
+Put Imba pages in
 `app/frontend/pages`. Use a JavaScript entrypoint so Vite Ruby discovers a
 script rather than emitting the Imba source as a static asset:
 

@@ -21,6 +21,10 @@
     "./http": {
       "types": "./src/http.d.ts",
       "default": "./src/http.js"
+    },
+    "./vite": {
+      "types": "./src/vite.d.ts",
+      "default": "./src/vite.js"
     }
   },
   "files": [
