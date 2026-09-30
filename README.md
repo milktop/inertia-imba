@@ -40,10 +40,11 @@ the adapter from a GitHub tag, and sets up:
 - eager loading of global tags from `app/frontend/components/`
 - `bin/dev` running Rails and Vite, and `bin/setup` installing npm packages
 - `.node-version`, history encryption, and Inertia controller tests
+- named routes exported from `config/routes.rb`, and the opt-in global tags
 - optionally, Rails 8 authentication with Imba login and password-reset pages
   (the template asks; set `INERTIA_IMBA_AUTH=1` or `0` to skip the prompt)
 
-Set `INERTIA_IMBA_REF=v0.1.2` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
+Set `INERTIA_IMBA_REF=v0.1.3` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
 to link a local checkout, or `INERTIA_IMBA_SOURCE` for any npm source. Without
 `--skip-javascript` it removes importmap, Turbo and Stimulus.
 
@@ -157,6 +158,70 @@ Enable prefetching explicitly with `<Link href="/students" prefetch=true>`.
 `cacheTags` passes through to Inertia's cache. External links, downloads, alternate
 targets and same-page fragments are never prefetched. Mount/click prefetch modes
 and `usePrefetch` are not implemented yet.
+
+## Named routes
+
+Refer to server routes by `controller.action` name instead of hard-coding URLs.
+Pass a route table to `createInertiaApp`, keyed by name, with each route's
+method and path pattern:
+
+```imba
+import routes from '@/routes.json'
+# { "tasks.show": { "method": "get", "path": "/tasks/:id" }, ... }
+
+createInertiaApp({ routes, resolve: ... })
+```
+
+The [Rails template](rails/template.rb) generates this file from `config/routes.rb`
+(`config/initializers/inertia_routes.rb`), rewrites it whenever routes change in
+development and before the Vite production build, and tests that the committed
+copy is current. Run `bin/rails inertia:routes` to regenerate it by hand.
+
+```imba
+<Link route="tasks.show" params={id: task.id}> task.title
+<Link route="tasks.show" params=task.id> "Same, for a route's only param"
+<LinkButton route="tasks.destroy" params=task.id confirm="Delete task?"> "Delete"
+
+def save
+	form.submit('tasks.update', task.id, { preserveScroll: true })
+
+router.visit(route('tasks.index', { page: 2 }))   # /tasks?page=2
+```
+
+- `route(name, params)` returns Inertia's `{ url, method }` pair, so `router.visit`,
+  `form.submit` and `useHttp` use the route's method. It converts to its URL
+  wherever a string is expected (`href=route(...)`, `window.open`).
+- `LinkButton` takes its method from the route unless `method` is given. `Link`
+  is GET-only and throws for other routes.
+- `form.submit('tasks.update', params, options)` works for `useForm`, precognitive
+  forms and `useHttp`. Names contain a dot, so they never clash with methods.
+- Params missing from the path become the query string. Optional segments such as
+  `(/:page)` are included when their params are given. Unknown names and missing
+  params throw with the route's pattern.
+
+The route table lists every exported path and ships to the browser. Paths are not
+secrets and the server still authorizes requests, but exclude controllers you'd
+rather not advertise.
+
+## Global tags
+
+Import the opt-in globals once, typically in `inertia.imba`:
+
+```imba
+import '@milktop/inertia-imba/globals'
+```
+
+This registers `<inertia-link>`, `<inertia-button>` and `<inertia-head>`, which
+behave exactly like `Link`, `LinkButton` and `Head`, and adds `route(name, params)`
+to every tag. Pages then need no imports for navigation:
+
+```imba
+<inertia-head title="Tasks">
+<inertia-link route="tasks.show" params=task.id> task.title
+<button @click=router.visit(route('tasks.index'))> "Back"
+```
+
+Without the import, nothing global is defined.
 
 ## Forms
 

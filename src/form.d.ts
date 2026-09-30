@@ -69,6 +69,8 @@ export interface Precognition<T> {
 
 export type FormSubmitArguments<Bound extends boolean> =
   | [method: Method, url: string, options?: UseFormSubmitOptions]
+  | [endpoint: UrlMethodPair, options?: UseFormSubmitOptions]
+  | [route: `${string}.${string}`, params?: import('./routes.js').RouteParams, options?: UseFormSubmitOptions]
   | (Bound extends true ? [endpoint: UrlMethodPair, options?: UseFormSubmitOptions] | [options?: UseFormSubmitOptions] : never)
 
 export interface FormMethods<T extends object, Bound extends boolean> extends FormState<T> {

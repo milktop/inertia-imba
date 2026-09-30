@@ -1,10 +1,15 @@
 import { router } from '@inertiajs/core'
 import { createLinkAction } from './link.js'
+import { route as resolveRoute } from './routes.js'
 
 # A native button keeps caller classes and [] styles on the interactive element.
 export tag LinkButton < button
 	prop href
-	prop method = 'post'
+	# Defaults to the named route's method, otherwise post.
+	prop method
+	# A named route, e.g. route="tasks.destroy" params={id: task.id}, instead of href.
+	prop route
+	prop params
 	prop data = {}
 	prop confirm
 	prop optimistic
@@ -37,8 +42,11 @@ export tag LinkButton < button
 
 	def mount
 		let settings = do
+			let target = route ? resolveRoute(route, params) : null
 			return {
-				href, method, data, confirm
+				href: target ? target.url : href
+				method: method or (target ? target.method : 'post')
+				data, confirm
 				disabled: disabledByUser
 				options: { replace, preserveState, preserveScroll, only, except, headers, optimistic }
 			}

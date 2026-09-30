@@ -137,3 +137,15 @@ actionButton.processing = false
 const validationEvent = new CustomEvent<import('@milktop/inertia-imba').LinkButtonErrorDetail>('error', { detail: { errors: { name: ['Required'] } } })
 const actionErrors: Record<string, string | string[]> = validationEvent.detail.errors
 void actionErrors
+
+// Named routes
+import { route as namedRoute } from '@milktop/inertia-imba'
+const target = namedRoute('tasks.show', 3)
+const targetUrl: string = target.url
+const asString: string = `${target}`
+declare const routeForm: import('@milktop/inertia-imba').Form<{ title: string }>
+routeForm.submit('tasks.update', { id: 1 }, { preserveScroll: true })
+routeForm.submit(namedRoute('tasks.destroy', 1))
+routeForm.submit('patch', '/tasks/1')
+// @ts-expect-error route names contain a dot
+routeForm.submit('tasks', { id: 1 })

@@ -4,6 +4,7 @@ import { cloneDeepWith, isEqualWith } from 'es-toolkit'
 import { get, has, set, toPath } from 'es-toolkit/compat'
 import { rememberObject } from './remember.js'
 import { withPrecognition } from './precognition.js'
+import { expandRouteSubmission } from './routes.js'
 
 // Files are immutable: retain their identity and metadata across defaults/reset.
 const isBlob = value => typeof Blob !== 'undefined' && value instanceof Blob
@@ -119,7 +120,14 @@ export function useForm(...args) {
       return form
     },
 
-    submit(method, url, options = {}) {
+    // submit(method, url, options), submit({ url, method }, options) or
+    // submit('tasks.update', params, options) with a named route.
+    submit(...args) {
+      const [target, second, third] = expandRouteSubmission(args)
+      const pair = target !== null && typeof target === 'object'
+      const method = pair ? target.method : target
+      const url = pair ? target.url : second
+      const options = (pair ? second : third) ?? {}
       const optimistic = options.optimistic ?? pendingOptimistic ?? undefined
       pendingOptimistic = null
       const data = form._transform ? form._transform(form.data()) : form.data()

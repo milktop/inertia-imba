@@ -1,3 +1,4 @@
+import { expandRouteSubmission } from './routes.js'
 import {
   hasFiles, http, HttpCancelledError, HttpNetworkError, HttpResponseError,
   mergeDataIntoQueryString, objectToFormData, UseFormUtils,
@@ -35,7 +36,7 @@ export function useHttp(...args) {
   form.cancel = () => active?.abort()
 
   form.submit = async (...submission) => {
-    const { method, url, options = {} } = UseFormUtils.parseSubmitArguments(submission, endpoint)
+    const { method, url, options = {} } = UseFormUtils.parseSubmitArguments(expandRouteSubmission(submission), endpoint)
     if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) throw new Error(`Unsupported HTTP method: ${method}`)
     if (active) throw new Error('This useHttp instance already has a pending request; cancel and await it or use a separate instance')
     if (options.onBefore?.() === false) throw new HttpCancelledError('Request cancelled by onBefore', url)

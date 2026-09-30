@@ -19,6 +19,7 @@ export interface HttpOptions<T, Response> {
 export type HttpSubmitArguments<T, R, Bound extends boolean> =
   | [method: Method, url: string, options?: HttpOptions<T, R>]
   | [endpoint: UrlMethodPair, options?: HttpOptions<T, R>]
+  | [route: `${string}.${string}`, params?: import('./routes.js').RouteParams, options?: HttpOptions<T, R>]
   | (Bound extends true ? [options?: HttpOptions<T, R>] : never)
 
 export interface HttpMethods<T extends object, R, Bound extends boolean> extends FormState<T> {

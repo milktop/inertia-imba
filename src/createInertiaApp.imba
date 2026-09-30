@@ -7,6 +7,7 @@ import {
 import { mount } from 'imba'
 import { InertiaApp } from './App.imba'
 import { setupHead } from './head.js'
+import { setRoutes } from './routes.js'
 
 export default def createInertiaApp(options = {})
 	let id = options.id or 'app'
@@ -15,6 +16,7 @@ export default def createInertiaApp(options = {})
 	let defaultLayout = options.layout
 	let progress = options.progress === undefined ? {} : options.progress
 	let initialPage = options.page
+	setRoutes(options.routes) if options.routes
 	let dev = options.dev === undefined ? import.meta.env && import.meta.env.DEV : options.dev
 
 	if typeof window == 'undefined'

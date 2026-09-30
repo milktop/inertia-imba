@@ -1,6 +1,6 @@
 {
   "name": "@milktop/inertia-imba",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "type": "module",
   "description": "Experimental Imba adapter for Inertia.js",
@@ -21,6 +21,10 @@
     "./http": {
       "types": "./src/http.d.ts",
       "default": "./src/http.js"
+    },
+    "./globals": {
+      "types": "./src/globals.d.ts",
+      "default": "./src/globals.imba"
     },
     "./vite": {
       "types": "./src/vite.d.ts",

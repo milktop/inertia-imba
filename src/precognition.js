@@ -1,4 +1,5 @@
 import { hasFiles, http, HttpResponseError, mergeDataIntoQueryString, objectToFormData, UseFormUtils } from '@inertiajs/core'
+import { expandRouteSubmission } from './routes.js'
 import { cloneDeepWith, isEqualWith } from 'es-toolkit'
 import { get } from 'es-toolkit/compat'
 import { commit } from 'imba'
@@ -181,7 +182,7 @@ export function withPrecognition(form, ...args) {
   const submit = form.submit
   form.submit = (...submission) => {
     stop()
-    const { method, url, options } = UseFormUtils.parseSubmitArguments(submission, resolveEndpoint)
+    const { method, url, options } = UseFormUtils.parseSubmitArguments(expandRouteSubmission(submission), resolveEndpoint)
     return submit(method, url, options)
   }
   return form

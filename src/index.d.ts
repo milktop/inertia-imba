@@ -4,6 +4,8 @@ export { useForm } from './form.js'
 export type { Form, PrecognitiveForm, FormState, FormErrors, ErrorMessage, ValidationOptions, Precognition } from './form.js'
 export { useHttp } from './http.js'
 export type { HttpForm, HttpOptions } from './http.js'
+export { route } from './routes.js'
+export type { RouteTable, RouteParams, RouteTarget } from './routes.js'
 
 /** Browser-only setup. The resolver may return a tag class or a page module. */
 export function createInertiaApp(options: CreateInertiaAppOptions): Promise<void>
@@ -28,6 +30,8 @@ export interface CreateInertiaAppOptions {
   title?: (title: string, page: Page | null) => string
   progress?: ProgressOptions | false
   layout?: (name: string, page: Page) => LayoutDeclaration | undefined
+  /** Named routes for route(), Link/LinkButton route props and form.submit(name). */
+  routes?: import('./routes.js').RouteTable
   setup?: (context: { el: HTMLElement; App: TagConstructor; props: AppProps }) => unknown | Promise<unknown>
 }
 
@@ -51,6 +55,9 @@ export interface LinkProps {
   prefetch?: boolean | 'prefetch' | 'hover'
   cacheFor?: PrefetchOptions['cacheFor']
   cacheTags?: string[]
+  /** A named GET route, used instead of href. */
+  route?: string
+  params?: import('./routes.js').RouteParams
 }
 /** An Imba anchor tag; navigation is GET-only. Native anchor attributes also work. */
 export declare class Link extends HTMLAnchorElement {}
@@ -83,7 +90,10 @@ export declare class WhenVisible implements WhenVisibleProps {
 
 /** Non-GET actions render directly as native buttons; no wrapper. */
 export interface LinkButtonProps extends Pick<LinkProps, 'replace' | 'preserveState' | 'preserveScroll' | 'only' | 'except' | 'headers'> {
-  href: string
+  href?: string
+  /** A named route, used instead of href; also supplies the method. */
+  route?: string
+  params?: import('./routes.js').RouteParams
   method?: Exclude<Method, 'get'>
   data?: RequestPayload
   confirm?: string
@@ -91,7 +101,7 @@ export interface LinkButtonProps extends Pick<LinkProps, 'replace' | 'preserveSt
   disabled?: boolean
 }
 export declare class LinkButton extends HTMLButtonElement {
-  href: string
+  href?: string
   method: Exclude<Method, 'get'>
   data: RequestPayload
   confirm?: string
