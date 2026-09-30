@@ -224,6 +224,32 @@ export default tag AboutPage
 
   create_file "app/frontend/components/.keep", ""
 
+  # Rails generates a Node-free Dockerfile with --skip-javascript, but
+  # assets:precompile runs vite build. Install Node and npm packages in the
+  # build stage only; node_modules is removed before the final image.
+  if File.exist?("Dockerfile")
+    inject_into_file "Dockerfile", before: "# Copy application code\n" do
+      <<~DOCKER
+        # Install Node.js and npm packages for the Vite build
+        ARG NODE_VERSION=#{`node --version`.strip.delete_prefix("v")}
+        ENV PATH=/usr/local/node/bin:$PATH
+        RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \\
+            /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \\
+            rm -rf /tmp/node-build-master
+
+        COPY package.json package-lock.json ./
+        RUN npm ci
+
+      DOCKER
+    end
+    inject_into_file "Dockerfile", after: "./bin/rails assets:precompile\n" do
+      "\nRUN rm -rf node_modules\n"
+    end
+  end
+  if File.exist?(".dockerignore")
+    append_to_file ".dockerignore", "\n# Ignore local Vite builds.\n/public/vite*\n"
+  end
+
   unless options[:skip_test]
     create_file "test/controllers/pages_controller_test.rb", <<~'RUBY'
       require "test_helper"
