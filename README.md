@@ -40,8 +40,10 @@ the adapter from a GitHub tag, and sets up:
 - eager loading of global tags from `app/frontend/components/`
 - `bin/dev` running Rails and Vite, and `bin/setup` installing npm packages
 - `.node-version`, history encryption, and Inertia controller tests
+- optionally, Rails 8 authentication with Imba login and password-reset pages
+  (the template asks; set `INERTIA_IMBA_AUTH=1` or `0` to skip the prompt)
 
-Set `INERTIA_IMBA_REF=v0.1.1` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
+Set `INERTIA_IMBA_REF=v0.1.2` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
 to link a local checkout, or `INERTIA_IMBA_SOURCE` for any npm source. Without
 `--skip-javascript` it removes importmap, Turbo and Stimulus.
 
