@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
-import { followLink, createLinkPrefetch } from '../src/link.js'
+import { followLink, createLinkPrefetch, isCurrentLink } from '../src/link.js'
 
 const originalHTMLElement = globalThis.HTMLElement
 globalThis.HTMLElement = class HTMLElement {}
@@ -186,4 +186,17 @@ test('button validation errors are reported without keeping state, and late erro
   action.destroy()
   requests[1].onError({ name: 'removed' })
   assert.equal(errors.length, 1)
+})
+
+test('isCurrentLink matches the current path, ignoring query, hash and trailing slash', () => {
+  const base = 'https://app.test/about'
+  assert.equal(isCurrentLink('/students', '/students?page=2', base), true)
+  assert.equal(isCurrentLink('/students/', '/students#top', base), true)
+  assert.equal(isCurrentLink('https://app.test/students', '/students', base), true)
+  assert.equal(isCurrentLink('/', '/', base), true)
+  assert.equal(isCurrentLink('/students', '/students/1', base), false)
+  assert.equal(isCurrentLink('https://other.test/students', '/students', base), false)
+  assert.equal(isCurrentLink('#top', '/about', base), false)
+  assert.equal(isCurrentLink('/students', null, base), false)
+  assert.equal(isCurrentLink(null, '/students', base), false)
 })

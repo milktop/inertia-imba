@@ -12,6 +12,16 @@ export function linkUrl(anchor) {
   return url.href
 }
 
+// True when href points at the current page's path. Queries, hashes and
+// trailing slashes are ignored; other origins and hash-only links never match.
+export function isCurrentLink(href, pageUrl, baseURI) {
+  if (!href || !pageUrl || href.startsWith('#')) return false
+  const target = new URL(href, baseURI)
+  const current = new URL(pageUrl, baseURI)
+  const path = url => url.pathname.replace(/\/+$/, '') || '/'
+  return target.origin === current.origin && path(target) === path(current)
+}
+
 export function followLink(event, anchor, options, router) {
   // Imba delegates events, so use the actual anchor as the current target.
   if (!shouldIntercept({

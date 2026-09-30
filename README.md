@@ -33,7 +33,7 @@ cd myapp && bin/dev
 ```
 
 The [template](rails/template.rb) installs the adapter from a GitHub tag. Set
-`INERTIA_IMBA_REF=v0.1.0` to choose another tag, or `INERTIA_IMBA_PATH=/path/to/repo`
+`INERTIA_IMBA_REF=v0.1.1` to choose another tag, or `INERTIA_IMBA_PATH=/path/to/repo`
 to link a local checkout. It adds `inertia_rails` and `vite_rails`, a persistent
 layout with flash messages, and Home/About pages. Without `--skip-javascript`
 it removes importmap, Turbo and Stimulus.
@@ -44,7 +44,8 @@ For an existing app, set up the pieces below by hand.
 
 Keep using `inertia_rails` on the server. Add the bundled Imba compiler plugin
 to `vite.config.js`. It compiles your pages and the adapter's own `.imba` source
-(the published `vite-plugin-imba` does not support current Imba alphas):
+(the published `vite-plugin-imba` does not support current Imba alphas), and
+configures Vite's dependency optimizer and a single shared Imba runtime:
 
 ```js
 import { defineConfig } from 'vite'
@@ -53,13 +54,8 @@ import imba from '@milktop/inertia-imba/vite'
 
 export default defineConfig({
   plugins: [RubyPlugin(), imba()],
-  optimizeDeps: { include: ['imba', 'imba/runtime', '@inertiajs/core'] },
-  resolve: { dedupe: ['imba', '@inertiajs/core'] },
 })
 ```
-
-`optimizeDeps` pre-bundles imports that the Imba transform adds after Vite's
-initial scan; `dedupe` keeps one Imba runtime when the adapter is linked locally.
 
 Put Imba pages in
 `app/frontend/pages`. Use a JavaScript entrypoint so Vite Ruby discovers a
@@ -125,6 +121,10 @@ import { Link } from '@milktop/inertia-imba'
 <Link href="/students?diagnostics=1" preserveState=true preserveScroll=true> "Details"
 <Link href="/about" target="_blank"> "Open About in a new tab"
 ```
+
+A Link whose path matches the current page (ignoring query, hash and trailing
+slash) gets `aria-current="page"`. Style it with `[aria-current=page]`; matching
+is exact, so `/students/1` does not mark `/students`.
 
 Normal left clicks and Enter activation perform Inertia GET visits. Modifier
 keys, other mouse buttons, downloads, external URLs, other browsing targets,

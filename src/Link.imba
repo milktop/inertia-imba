@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/core'
-import { followLink, createLinkPrefetch } from './link.js'
+import { followLink, createLinkPrefetch, isCurrentLink } from './link.js'
+import { getPage } from './page.js'
 
 # An imported tag backed by a real anchor; normal attributes and child content
 # stay native, including href, target, download, title, and accessibility labels.
@@ -39,10 +40,14 @@ export tag Link < a
 	def cool
 		prefetcher.cancel! if prefetcher
 
+	get current
+		isCurrentLink(getAttribute('href'), getPage!..url, document.baseURI)
+
 	def follow event
 		cool!
 		followLink(event, self, visitOptions!, router)
 
-	<self @click=follow @mouseenter=warm @mouseleave=cool @focus=warm @blur=cool>
+	# aria-current marks links to the current page; style with [aria-current=page].
+	<self aria-current=(current ? 'page' : null) @click=follow @mouseenter=warm @mouseleave=cool @focus=warm @blur=cool>
 
 		<slot>
