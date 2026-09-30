@@ -32,11 +32,18 @@ rails new myapp --skip-javascript \
 cd myapp && bin/dev
 ```
 
-The [template](rails/template.rb) installs the adapter from a GitHub tag. Set
-`INERTIA_IMBA_REF=v0.1.1` to choose another tag, or `INERTIA_IMBA_PATH=/path/to/repo`
-to link a local checkout. It adds `inertia_rails` and `vite_rails`, a persistent
-layout with flash messages, and Home/About pages. Without `--skip-javascript`
-it removes importmap, Turbo and Stimulus.
+The [template](rails/template.rb) adds `inertia_rails` and `vite_rails`, installs
+the adapter from a GitHub tag, and sets up:
+
+- a persistent layout with flash messages, `aria-current` nav links, and Home/About pages
+- an `@` import alias for `app/frontend` (with `jsconfig.json` for editors)
+- eager loading of global tags from `app/frontend/components/`
+- `bin/dev` running Rails and Vite, and `bin/setup` installing npm packages
+- `.node-version`, history encryption, and Inertia controller tests
+
+Set `INERTIA_IMBA_REF=v0.1.1` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
+to link a local checkout, or `INERTIA_IMBA_SOURCE` for any npm source. Without
+`--skip-javascript` it removes importmap, Turbo and Stimulus.
 
 ## Rails setup
 

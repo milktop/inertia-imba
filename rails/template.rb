@@ -6,12 +6,14 @@
 #     -m https://raw.githubusercontent.com/milktop/inertia-imba/main/rails/template.rb
 #
 # Environment overrides:
-#   INERTIA_IMBA_REF=v0.1.0          adapter tag, branch or commit to install
-#   INERTIA_IMBA_PATH=/path/to/repo  install a local checkout via file: instead
+#   INERTIA_IMBA_REF=v0.1.1          adapter tag, branch or commit to install
+#   INERTIA_IMBA_PATH=/path/to/repo  link a local checkout via file: instead
+#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.1
 
-ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.0")
+ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.1")
 ADAPTER_PATH = ENV["INERTIA_IMBA_PATH"]
-ADAPTER_SOURCE = ADAPTER_PATH ? "file:#{File.expand_path(ADAPTER_PATH)}" : "github:milktop/inertia-imba##{ADAPTER_REF}"
+ADAPTER_SOURCE = ENV["INERTIA_IMBA_SOURCE"] ||
+  (ADAPTER_PATH ? "file:#{File.expand_path(ADAPTER_PATH)}" : "github:milktop/inertia-imba##{ADAPTER_REF}")
 
 unless system("npm --version", out: File::NULL, err: File::NULL)
   say "npm is required. Install Node.js 20+ and try again.", :red
@@ -38,6 +40,12 @@ after_bundle do
   remove_file "app/frontend/entrypoints/application.js"
 
   run "npm install imba @inertiajs/core #{ADAPTER_SOURCE}"
+  create_file ".node-version", "#{`node --version`.strip.delete_prefix("v")}\n", force: true
+
+  # bin/setup installs npm packages alongside gems.
+  inject_into_file "bin/setup", after: /system\("bundle check"\).*\n/ do
+    "  system! \"npm install\"\n"
+  end
 
   # Run Rails and the Vite dev server together from Procfile.dev.
   create_file "bin/dev", <<~'SH', force: true
@@ -56,22 +64,36 @@ after_bundle do
   create_file "vite.config.js", <<~'JS', force: true
     import { defineConfig } from 'vite'
     import RubyPlugin from 'vite-plugin-ruby'
+    import { fileURLToPath } from 'node:url'
     import imba from '@milktop/inertia-imba/vite'
 
     export default defineConfig({
+      // The Imba plugin also configures prebundling and a shared Imba runtime.
       plugins: [RubyPlugin(), imba()],
-      // Imba imports are introduced by the transform, after Vite's initial scan.
-      optimizeDeps: { include: ['imba', 'imba/runtime', '@inertiajs/core'] },
-      // Keeps one Imba runtime when the adapter is linked from a local checkout.
-      resolve: { dedupe: ['imba', '@inertiajs/core'] },
+      // `@/components/button.imba` imports from app/frontend.
+      resolve: {
+        alias: { '@': fileURLToPath(new URL('./app/frontend', import.meta.url)) },
+      },
     })
   JS
+
+  # Lets editors resolve the @ alias.
+  create_file "jsconfig.json", <<~'JSON'
+    {
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": { "@/*": ["app/frontend/*"] }
+      },
+      "include": ["app/frontend/**/*"]
+    }
+  JSON
 
   create_file "config/initializers/inertia_rails.rb", <<~'RUBY', force: true
     # frozen_string_literal: true
 
     InertiaRails.configure do |config|
       config.version = ViteRuby.digest
+      config.encrypt_history = true
       config.always_include_errors_hash = true
       config.use_script_element_for_initial_page = true
       config.use_data_inertia_head_attribute = true
@@ -131,10 +153,14 @@ after_bundle do
 
   create_file "app/frontend/inertia.imba", <<~'IMBA'
 import { createInertiaApp } from '@milktop/inertia-imba'
-import AppLayout from './layouts/app.imba'
+import AppLayout from '@/layouts/app.imba'
 import 'imba/preflight.css'
 
 let pages = import.meta.glob('./pages/**/*.imba', { eager: true })
+
+# Registers global tags in components/ so pages can use them without imports.
+# A component extending another custom tag must import its parent directly.
+import.meta.glob('./components/**/*.imba', { eager: true })
 
 createInertiaApp({
 	layout: do(name, page)
@@ -144,6 +170,7 @@ createInertiaApp({
 		throw new Error("Unknown Inertia page: {name}") unless page
 		page
 	title: do(title) title ? "{title} | APP_TITLE" : "APP_TITLE"
+	progress: { color: '#4f46e5' }
 })
   IMBA
   gsub_file "app/frontend/inertia.imba", "APP_TITLE", app_const_base.titleize
@@ -155,6 +182,9 @@ import { Link } from '@milktop/inertia-imba'
 export default tag AppLayout
 	prop pageContent
 	prop flash = {}
+
+	css header a c:gray6 td:none
+		&[aria-current="page"] c:gray9 fw:600
 
 	<self>
 		<header [d:flex g:4 p:4 bdb:1px solid gray3]>
@@ -191,6 +221,32 @@ export default tag AboutPage
 		<h1 [fs:xl fw:bold]> "About"
 		<p> "Rails, Inertia and Imba."
   IMBA
+
+  create_file "app/frontend/components/.keep", ""
+
+  unless options[:skip_test]
+    create_file "test/controllers/pages_controller_test.rb", <<~'RUBY'
+      require "test_helper"
+
+      class PagesControllerTest < ActionDispatch::IntegrationTest
+        test "first load renders the Inertia page with props" do
+          get root_url
+
+          assert_response :success
+          page = JSON.parse(Nokogiri::HTML(response.body).at_css('script[data-page="app"]').text)
+          assert_equal "pages/index", page.fetch("component")
+          assert_equal "Hello from Rails", page.dig("props", "greeting")
+        end
+
+        test "Inertia visits return JSON" do
+          get about_url, headers: { "X-Inertia" => "true", "X-Inertia-Version" => ViteRuby.digest }
+
+          assert_response :success
+          assert_equal "pages/about", response.parsed_body.fetch("component")
+        end
+      end
+    RUBY
+  end
 
   say "\nInertia + Imba is ready. Run bin/dev and open http://localhost:3000", :green
 end
