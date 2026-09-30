@@ -6,12 +6,12 @@
 #     -m https://raw.githubusercontent.com/milktop/inertia-imba/main/rails/template.rb
 #
 # Environment overrides:
-#   INERTIA_IMBA_REF=v0.1.2          adapter tag, branch or commit to install
+#   INERTIA_IMBA_REF=v0.1.3          adapter tag, branch or commit to install
 #   INERTIA_IMBA_PATH=/path/to/repo  link a local checkout via file: instead
-#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.2
+#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.3
 #   INERTIA_IMBA_AUTH=1|0            add authentication without prompting
 
-ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.2")
+ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.3")
 ADAPTER_PATH = ENV["INERTIA_IMBA_PATH"]
 ADAPTER_SOURCE = ENV["INERTIA_IMBA_SOURCE"] ||
   (ADAPTER_PATH ? "file:#{File.expand_path(ADAPTER_PATH)}" : "github:milktop/inertia-imba##{ADAPTER_REF}")
@@ -169,7 +169,10 @@ after_bundle do
 
   create_file "app/frontend/inertia.imba", <<~'IMBA'
 import { createInertiaApp } from '@milktop/inertia-imba'
+# <inertia-link>, <inertia-button>, <inertia-head> and route() in every tag.
+import '@milktop/inertia-imba/globals'
 import AppLayout from '@/layouts/app.imba'
+import routes from '@/routes.json'
 import 'imba/preflight.css'
 
 let pages = import.meta.glob('./pages/**/*.imba', { eager: true })
@@ -179,6 +182,8 @@ let pages = import.meta.glob('./pages/**/*.imba', { eager: true })
 import.meta.glob('./components/**/*.imba', { eager: true })
 
 createInertiaApp({
+	# Exported from config/routes.rb; see config/initializers/inertia_routes.rb.
+	routes: routes
 	layout: do(name, page)
 		AppLayout
 	resolve: do(name)
@@ -192,8 +197,6 @@ createInertiaApp({
   gsub_file "app/frontend/inertia.imba", "APP_TITLE", app_const_base.titleize
 
   create_file "app/frontend/layouts/app.imba", <<~'IMBA'
-import { Link } from '@milktop/inertia-imba'
-
 # Persistent layout: its state survives page visits.
 export default tag AppLayout
 	prop pageContent
@@ -204,8 +207,8 @@ export default tag AppLayout
 
 	<self>
 		<header [d:flex g:4 p:4 bdb:1px solid gray3]>
-			<Link href="/" prefetch> "Home"
-			<Link href="/about" prefetch> "About"
+			<inertia-link route="pages.index" prefetch> "Home"
+			<inertia-link route="pages.about" prefetch> "About"
 		<main [p:4]>
 			if flash.notice
 				<p role="status" [c:green7]> flash.notice
@@ -215,25 +218,21 @@ export default tag AppLayout
   IMBA
 
   create_file "app/frontend/pages/pages/index.imba", <<~'IMBA'
-import { Head } from '@milktop/inertia-imba'
-
 export default tag HomePage
 	prop greeting
 	count = 0
 
 	<self>
-		<Head title="Home">
+		<inertia-head title="Home">
 		<h1 [fs:xl fw:bold]> greeting
 		<p> "Edit app/frontend/pages/pages/index.imba to get started."
 		<button @click=count++> "Clicked {count} times"
   IMBA
 
   create_file "app/frontend/pages/pages/about.imba", <<~'IMBA'
-import { Head } from '@milktop/inertia-imba'
-
 export default tag AboutPage
 	<self>
-		<Head title="About">
+		<inertia-head title="About">
 		<h1 [fs:xl fw:bold]> "About"
 		<p> "Rails, Inertia and Imba."
   IMBA
@@ -307,6 +306,8 @@ export default tag AboutPage
   end
 
   add_authentication if AUTH
+
+  add_route_export
 
   say "\nInertia + Imba is ready. Run bin/dev and open http://localhost:3000", :green
 end
@@ -411,31 +412,29 @@ def add_authentication
     "  inertia_share user: -> { Current.user.as_json(only: %i[id email_address]) if authenticated? }\n"
   end
 
-  gsub_file "app/frontend/layouts/app.imba", "import { Link } from '@milktop/inertia-imba'",
-    "import { Link, LinkButton } from '@milktop/inertia-imba'"
   gsub_file "app/frontend/layouts/app.imba", "\tprop flash = {}\n", "\tprop flash = {}\n\tprop user\n"
   nav = <<~'IMBA'.gsub(/^/, "\t\t\t")
-    <Link href="/about" prefetch> "About"
+    <inertia-link route="pages.about" prefetch> "About"
     <span [ml:auto]>
     if user
     	<span> user.email_address
-    	<LinkButton href="/session" method="delete"> "Log out"
+    	<inertia-button route="sessions.destroy"> "Log out"
     else
-    	<Link href="/session/new"> "Log in"
+    	<inertia-link route="sessions.new"> "Log in"
   IMBA
-  gsub_file "app/frontend/layouts/app.imba", %(\t\t\t<Link href="/about" prefetch> "About"\n), nav
+  gsub_file "app/frontend/layouts/app.imba", %(\t\t\t<inertia-link route="pages.about" prefetch> "About"\n), nav
 
   create_file "app/frontend/pages/sessions/new.imba", <<~'IMBA'
-import { Head, Link, useForm } from '@milktop/inertia-imba'
+import { useForm } from '@milktop/inertia-imba'
 
 export default tag SessionsNew
 	form = useForm({ email_address: '', password: '' })
 
 	def submit
-		form.post('/session', { onFinish: do form.reset('password') })
+		form.submit('sessions.create', null, { onFinish: do form.reset('password') })
 
 	<self>
-		<Head title="Log in">
+		<inertia-head title="Log in">
 		<h1 [fs:xl fw:bold]> "Log in"
 		<form @submit.prevent=submit [d:grid g:2 maw:24rem]>
 			<input type="email" name="email_address" autocomplete="username" placeholder="Email address" required bind=form.email_address>
@@ -443,35 +442,35 @@ export default tag SessionsNew
 			if form.errors.email_address
 				<p role="alert" [c:red7]> form.errors.email_address
 			<button type="submit" disabled=form.processing> "Log in"
-		<Link href="/passwords/new"> "Forgot password?"
+		<inertia-link route="passwords.new"> "Forgot password?"
   IMBA
 
   create_file "app/frontend/pages/passwords/new.imba", <<~'IMBA'
-import { Head, Link, useForm } from '@milktop/inertia-imba'
+import { useForm } from '@milktop/inertia-imba'
 
 export default tag PasswordsNew
 	form = useForm({ email_address: '' })
 
 	<self>
-		<Head title="Forgot password">
+		<inertia-head title="Forgot password">
 		<h1 [fs:xl fw:bold]> "Forgot your password?"
-		<form @submit.prevent=form.post('/passwords') [d:grid g:2 maw:24rem]>
+		<form @submit.prevent=form.submit('passwords.create') [d:grid g:2 maw:24rem]>
 			<input type="email" name="email_address" autocomplete="username" placeholder="Email address" required bind=form.email_address>
 			<button type="submit" disabled=form.processing> "Email reset instructions"
-		<Link href="/session/new"> "Back to log in"
+		<inertia-link route="sessions.new"> "Back to log in"
   IMBA
 
   create_file "app/frontend/pages/passwords/edit.imba", <<~'IMBA'
-import { Head, useForm } from '@milktop/inertia-imba'
+import { useForm } from '@milktop/inertia-imba'
 
 export default tag PasswordsEdit
 	prop token
 	form = useForm({ password: '', password_confirmation: '' })
 
 	<self>
-		<Head title="Reset password">
+		<inertia-head title="Reset password">
 		<h1 [fs:xl fw:bold]> "Update your password"
-		<form @submit.prevent=form.put("/passwords/{token}") [d:grid g:2 maw:24rem]>
+		<form @submit.prevent=form.submit('passwords.update', token) [d:grid g:2 maw:24rem]>
 			<input type="password" name="password" autocomplete="new-password" placeholder="New password" required maxlength=72 bind=form.password>
 			if form.errors.password
 				<p role="alert" [c:red7]> form.errors.password
@@ -624,6 +623,76 @@ export default tag PasswordsEdit
 
         follow_redirect!
         assert inertia_page.dig("props", "errors", "password_confirmation")
+      end
+    end
+  RUBY
+end
+
+# Exports config/routes.rb to app/frontend/routes.json for route(), the
+# route= props on links and buttons, and form.submit('tasks.update', params).
+def add_route_export
+  create_file "config/initializers/inertia_routes.rb", <<~'RUBY'
+    # frozen_string_literal: true
+
+    # Writes app/frontend/routes.json, keyed by "controller.action":
+    #   { "tasks.destroy": { "method": "delete", "path": "/tasks/:id" } }
+    # It is rewritten whenever routes load in development and before the Vite
+    # production build; commit it. Every listed path ships to the browser, so
+    # add controllers to EXCLUDED_CONTROLLERS to keep them out of it.
+    module InertiaRoutes
+      FILE = Rails.root.join("app/frontend/routes.json")
+      EXCLUDED_CONTROLLERS = %r{\A(rails|active_storage|action_mailbox|turbo)/}
+
+      def self.table
+        Rails.application.routes.routes.each_with_object({}) do |route, table|
+          controller, action = route.defaults.values_at(:controller, :action)
+          verb = route.verb.to_s.split("|").first.to_s.downcase
+          next if controller.blank? || action.blank? || verb.blank? || route.internal
+          next if controller.match?(EXCLUDED_CONTROLLERS)
+
+          # The first route for an action wins, e.g. /login over /session/new.
+          table["#{controller}.#{action}"] ||= { method: verb, path: route.path.spec.to_s.delete_suffix("(.:format)") }
+        end.sort.to_h
+      end
+
+      def self.write
+        json = "#{JSON.pretty_generate(table)}\n"
+        FILE.write(json) unless FILE.exist? && FILE.read == json
+      end
+    end
+
+    Rails.application.config.after_routes_loaded { InertiaRoutes.write } if Rails.env.development?
+  RUBY
+
+  create_file "lib/tasks/inertia_routes.rake", <<~'RUBY'
+    namespace :inertia do
+      desc "Export named routes to app/frontend/routes.json"
+      task routes: :environment do
+        InertiaRoutes.write
+      end
+    end
+
+    # Regenerate before Vite bundles routes.json into production assets;
+    # assets:precompile runs vite:build_all.
+    %w[vite:build vite:build_all].each do |name|
+      Rake::Task[name].enhance([ "inertia:routes" ]) if Rake::Task.task_defined?(name)
+    end
+  RUBY
+
+  rails_command "inertia:routes"
+
+  return if options[:skip_test]
+
+  create_file "test/lib/inertia_routes_test.rb", <<~'RUBY'
+    require "test_helper"
+
+    class InertiaRoutesTest < ActiveSupport::TestCase
+      test "exports actions with their method and path" do
+        assert_equal({ method: "get", path: "/" }, InertiaRoutes.table["pages.index"])
+      end
+
+      test "routes.json is up to date; run bin/rails inertia:routes" do
+        assert_equal InertiaRoutes.table.as_json, JSON.parse(InertiaRoutes::FILE.read)
       end
     end
   RUBY
