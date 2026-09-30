@@ -135,6 +135,11 @@ after_bundle do
     # instance variables as props.
     class InertiaController < ApplicationController
       inertia_config default_render: true
+
+      # Every instance variable an action sets, including ones set by
+      # before_action callbacks, is sent to the browser as a prop, serialized
+      # with all of its attributes. For models with sensitive columns, pass
+      # explicit props (render inertia: { ... }) or a presenter instead.
       use_inertia_instance_props
 
       inertia_share flash: -> { flash.to_hash }
@@ -312,6 +317,21 @@ end
 def add_authentication
   generate "authentication"
   rails_command "db:migrate"
+
+  # A safety net: a User that ends up as a prop never includes its password hash.
+  inject_into_file "app/models/user.rb", before: /^end\s*\z/ do
+    <<~'RUBY'.gsub(/^(?=.)/, "  ")
+
+      # Never serialize the password hash, even if a User becomes an Inertia
+      # prop or is asked for it with only:, which takes precedence over except:.
+      def serializable_hash(options = nil)
+        options = options ? options.dup : {}
+        options[:except] = Array(options[:except]) + [ "password_digest" ]
+        options[:only] &&= Array(options[:only]).map(&:to_s) - [ "password_digest" ]
+        super(options)
+      end
+    RUBY
+  end
   remove_dir "app/views/sessions"
   remove_dir "app/views/passwords"
 
@@ -475,6 +495,18 @@ export default tag PasswordsEdit
 
           assert_redirected_to new_session_path
         end
+    RUBY
+  end
+
+  inject_into_file "test/models/user_test.rb", before: /^end\s*\z/ do
+    <<~'RUBY'.gsub(/^(?=.)/, "  ")
+
+      test "never serializes the password hash" do
+        user = users(:one)
+
+        assert_not_includes user.as_json.keys, "password_digest"
+        assert_equal [ "email_address" ], user.as_json(only: %i[email_address password_digest]).keys
+      end
     RUBY
   end
 
