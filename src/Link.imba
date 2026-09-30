@@ -47,7 +47,14 @@ export tag Link < a
 		cool!
 		followLink(event, self, visitOptions!, router)
 
-	# aria-current marks links to the current page; style with [aria-current=page].
-	<self aria-current=(current ? 'page' : null) @click=follow @mouseenter=warm @mouseleave=cool @focus=warm @blur=cool>
+	# Marks links to the current page; style with [aria-current=page]. Set
+	# directly: a bound attribute is written as "null"/"undefined" once cleared.
+	def rendered
+		if current
+			setAttribute('aria-current', 'page')
+		else
+			removeAttribute('aria-current')
+
+	<self @click=follow @mouseenter=warm @mouseleave=cool @focus=warm @blur=cool>
 
 		<slot>
