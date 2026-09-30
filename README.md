@@ -22,7 +22,25 @@ See [the API guide](docs/api.md) for typed examples, JavaScript/JSDoc usage, and
 supported-feature table. Method names stay consistent with other Inertia adapters.
 Run `npm run test:types` to check the declarations and usage examples.
 
+## New Rails app
+
+Generate a Rails app with Inertia, Vite and Imba already configured:
+
+```sh
+rails new myapp --skip-javascript \
+  -m https://raw.githubusercontent.com/milktop/inertia-imba/main/rails/template.rb
+cd myapp && bin/dev
+```
+
+The [template](rails/template.rb) installs the adapter from a GitHub tag. Set
+`INERTIA_IMBA_REF=v0.1.0` to choose another tag, or `INERTIA_IMBA_PATH=/path/to/repo`
+to link a local checkout. It adds `inertia_rails` and `vite_rails`, a persistent
+layout with flash messages, and Home/About pages. Without `--skip-javascript`
+it removes importmap, Turbo and Stimulus.
+
 ## Rails setup
+
+For an existing app, set up the pieces below by hand.
 
 Keep using `inertia_rails` on the server. Add the bundled Imba compiler plugin
 to `vite.config.js`. It compiles your pages and the adapter's own `.imba` source
