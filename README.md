@@ -36,6 +36,8 @@ The [template](rails/template.rb) adds `inertia_rails` and `vite_rails`, install
 the adapter from a GitHub tag, and sets up:
 
 - a persistent layout with flash messages, `aria-current` nav links, and Home/About pages
+- dark mode: a System/Light/Dark toggle (`app/frontend/theme.imba`) and theme-aware
+  colour variables in `app/frontend/styles.imba`, applied before first paint
 - an `@` import alias for `app/frontend` (with `jsconfig.json` for editors)
 - eager loading of global tags from `app/frontend/components/`
 - `bin/dev` running Rails and Vite, and `bin/setup` installing npm packages

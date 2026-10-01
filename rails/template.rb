@@ -116,6 +116,14 @@ after_bundle do
     <html>
       <head>
         <meta name="viewport" content="width=device-width,initial-scale=1">
+        <%= javascript_tag nonce: true do %>
+          // Apply the saved theme before first paint; app/frontend/theme.imba takes over after load.
+          try {
+            var theme = localStorage.getItem('theme') || 'system';
+            if (theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches))
+              document.documentElement.classList.add('dark');
+          } catch (e) {}
+        <% end %>
         <%= csrf_meta_tags %>
         <%= csp_meta_tag %>
         <%= inertia_meta_tags %>
@@ -173,7 +181,7 @@ import { createInertiaApp } from '@milktop/inertia-imba'
 import '@milktop/inertia-imba/globals'
 import AppLayout from '@/layouts/app.imba'
 import routes from '@/routes.json'
-import 'imba/preflight.css'
+import '@/styles.imba'
 
 let pages = import.meta.glob('./pages/**/*.imba', { eager: true })
 
@@ -202,19 +210,87 @@ export default tag AppLayout
 	prop pageContent
 	prop flash = {}
 
-	css header a c:gray6 td:none
-		&[aria-current="page"] c:gray9 fw:600
+	css header a c:$text-muted td:none
+		&[aria-current="page"] c:$text fw:600
 
 	<self>
-		<header [d:flex g:4 p:4 bdb:1px solid gray3]>
+		<header [d:flex ai:center g:4 p:4 bdb:1px solid $border]>
 			<inertia-link route="pages.index" prefetch> "Home"
 			<inertia-link route="pages.about" prefetch> "About"
+			<span [ml:auto]>
+			<theme-toggle>
 		<main [p:4]>
 			if flash.notice
-				<p role="status" [c:green7]> flash.notice
+				<p role="status" [c:$success]> flash.notice
 			if flash.alert
-				<p role="alert" [c:red7]> flash.alert
+				<p role="alert" [c:$danger]> flash.alert
 			<{pageContent}>
+  IMBA
+
+  create_file "app/frontend/styles.imba", <<~'IMBA'
+import 'imba/preflight.css'
+
+global css
+	# Colours follow the theme: use these instead of palette colours like gray6.
+	# theme.imba toggles the .dark class on <html>.
+	@root
+		$bg:white $text:gray9 $text-muted:gray6 $border:gray3
+		$success:green7 $danger:red7
+		color-scheme:light
+	html.dark
+		$bg:gray9 $text:gray1 $text-muted:gray4 $border:gray7
+		$success:green4 $danger:red4
+		color-scheme:dark
+
+	body bg:$bg c:$text
+  IMBA
+
+  create_file "app/frontend/theme.imba", <<~'IMBA'
+# Theme choice is 'system', 'light' or 'dark'. The resolved theme is applied as
+# a `dark` class on <html>, which the colour variables in styles.imba key off.
+# The inline script in application.html.erb applies it before first paint.
+const KEY = 'theme'
+const media = window.matchMedia('(prefers-color-scheme: dark)')
+
+def read
+	try
+		return window.localStorage.getItem(KEY) or 'system'
+	catch
+		return 'system'
+
+class Theme
+	choice = read!
+
+	get dark?
+		choice == 'dark' or (choice == 'system' and media.matches)
+
+	def set value
+		choice = value
+		# Inside methods a bare `localStorage` would compile to self.localStorage.
+		try window.localStorage.setItem(KEY, value)
+		apply!
+
+	def apply
+		document.documentElement.classList.toggle('dark', dark?)
+		imba.commit!
+
+export const theme = new Theme
+
+media.addEventListener('change', do theme.apply!)
+theme.apply!
+  IMBA
+
+  create_file "app/frontend/components/theme-toggle.imba", <<~'IMBA'
+import { theme } from '@/theme.imba'
+
+tag theme-toggle
+	css select bg:transparent c:inherit fs:sm px:2 py:1 bd:1px solid $border rd:md
+
+	<self>
+		<select aria-label="Theme" bind=theme.choice @change=theme.set(theme.choice)>
+			<option value="system"> "System"
+			<option value="light"> "Light"
+			<option value="dark"> "Dark"
   IMBA
 
   create_file "app/frontend/pages/pages/index.imba", <<~'IMBA'
@@ -237,7 +313,6 @@ export default tag AboutPage
 		<p> "Rails, Inertia and Imba."
   IMBA
 
-  create_file "app/frontend/components/.keep", ""
 
   # Rails generates a Node-free Dockerfile with --skip-javascript, but
   # assets:precompile runs vite build. Install Node and npm packages in the
@@ -414,7 +489,6 @@ def add_authentication
 
   gsub_file "app/frontend/layouts/app.imba", "\tprop flash = {}\n", "\tprop flash = {}\n\tprop user\n"
   nav = <<~'IMBA'.gsub(/^/, "\t\t\t")
-    <inertia-link route="pages.about" prefetch> "About"
     <span [ml:auto]>
     if user
     	<span> user.email_address
@@ -422,7 +496,7 @@ def add_authentication
     else
     	<inertia-link route="sessions.new"> "Log in"
   IMBA
-  gsub_file "app/frontend/layouts/app.imba", %(\t\t\t<inertia-link route="pages.about" prefetch> "About"\n), nav
+  gsub_file "app/frontend/layouts/app.imba", %(\t\t\t<span [ml:auto]>\n), nav
 
   create_file "app/frontend/pages/sessions/new.imba", <<~'IMBA'
 import { useForm } from '@milktop/inertia-imba'
@@ -440,7 +514,7 @@ export default tag SessionsNew
 			<input type="email" name="email_address" autocomplete="username" placeholder="Email address" required bind=form.email_address>
 			<input type="password" name="password" autocomplete="current-password" placeholder="Password" required bind=form.password>
 			if form.errors.email_address
-				<p role="alert" [c:red7]> form.errors.email_address
+				<p role="alert" [c:$danger]> form.errors.email_address
 			<button type="submit" disabled=form.processing> "Log in"
 		<inertia-link route="passwords.new"> "Forgot password?"
   IMBA
@@ -473,10 +547,10 @@ export default tag PasswordsEdit
 		<form @submit.prevent=form.submit('passwords.update', token) [d:grid g:2 maw:24rem]>
 			<input type="password" name="password" autocomplete="new-password" placeholder="New password" required maxlength=72 bind=form.password>
 			if form.errors.password
-				<p role="alert" [c:red7]> form.errors.password
+				<p role="alert" [c:$danger]> form.errors.password
 			<input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repeat new password" required maxlength=72 bind=form.password_confirmation>
 			if form.errors.password_confirmation
-				<p role="alert" [c:red7]> form.errors.password_confirmation
+				<p role="alert" [c:$danger]> form.errors.password_confirmation
 			<button type="submit" disabled=form.processing> "Save"
   IMBA
 
