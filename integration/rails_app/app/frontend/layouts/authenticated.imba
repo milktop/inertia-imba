@@ -1,4 +1,5 @@
 import { Head, Link } from '@milktop/inertia-imba'
+import '../lib/theme.imba'
 
 export default tag AuthenticatedLayout
 	prop pageContent
@@ -16,6 +17,7 @@ export default tag AuthenticatedLayout
 				<Link href="/" prefetch> "Home"
 				<Link href="/students" prefetch> "Students"
 				<Link href="/about" prefetch> "About"
+			<theme-toggle>
 
 		<main>
 			if flash and flash.notice
