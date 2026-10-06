@@ -37,6 +37,10 @@ export interface CreateInertiaAppOptions {
 
 export function getPage<T extends PageProps = PageProps>(): Page<T> | null
 export function onPageChange<T extends PageProps = PageProps>(listener: (page: Page<T>) => void): () => void
+/** The current page's path, without query, hash or trailing slash; null before the first page. */
+export function currentPath(): string | null
+/** True when href is the current page or a page under it ('/' matches only itself). */
+export function isCurrent(href: string, options?: { exact?: boolean }): boolean
 /** Mutate the returned object; the key identifies its history entry. Files restore as null. */
 export type Remembered<T> = T extends Blob ? null
   : T extends Date | Function ? T

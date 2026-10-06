@@ -46,7 +46,7 @@ the adapter from a GitHub tag, and sets up:
 - optionally, Rails 8 authentication with Imba login and password-reset pages
   (the template asks; set `INERTIA_IMBA_AUTH=1` or `0` to skip the prompt)
 
-Set `INERTIA_IMBA_REF=v0.1.4` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
+Set `INERTIA_IMBA_REF=v0.1.5` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
 to link a local checkout, or `INERTIA_IMBA_SOURCE` for any npm source. Without
 `--skip-javascript` it removes importmap, Turbo and Stimulus.
 
@@ -137,6 +137,18 @@ import { Link } from '@milktop/inertia-imba'
 A Link whose path matches the current page (ignoring query, hash and trailing
 slash) gets `aria-current="page"`. Style it with `[aria-current=page]`; matching
 is exact, so `/students/1` does not mark `/students`.
+
+For navigation that should stay highlighted on sub-pages, use `isCurrent`:
+
+```imba
+import { isCurrent } from '@milktop/inertia-imba'
+
+<a.nav-item .active=isCurrent('/students')>  # also on /students/1
+<a.nav-item .active=isCurrent('/')>          # / only matches itself
+```
+
+`isCurrent(href, { exact: true })` matches the page itself only, like Link.
+`currentPath()` returns the current path without query, hash or trailing slash.
 
 Normal left clicks and Enter activation perform Inertia GET visits. Modifier
 keys, other mouse buttons, downloads, external URLs, other browsing targets,

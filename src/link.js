@@ -1,4 +1,5 @@
 import { shouldIntercept } from '@inertiajs/core'
+import { getPage } from './page.js'
 
 export function linkUrl(anchor) {
   const href = anchor.getAttribute('href')
@@ -12,14 +13,34 @@ export function linkUrl(anchor) {
   return url.href
 }
 
+const pathOf = url => url.pathname.replace(/\/+$/, '') || '/'
+
 // True when href points at the current page's path. Queries, hashes and
 // trailing slashes are ignored; other origins and hash-only links never match.
-export function isCurrentLink(href, pageUrl, baseURI) {
+// With prefix, pages under href match too ('/students' for '/students/1'),
+// except '/', which only ever matches itself.
+export function isCurrentLink(href, pageUrl, baseURI, { prefix = false } = {}) {
   if (!href || !pageUrl || href.startsWith('#')) return false
   const target = new URL(href, baseURI)
   const current = new URL(pageUrl, baseURI)
-  const path = url => url.pathname.replace(/\/+$/, '') || '/'
-  return target.origin === current.origin && path(target) === path(current)
+  if (target.origin !== current.origin) return false
+  const path = pathOf(target)
+  if (path === pathOf(current)) return true
+  return prefix && path !== '/' && pathOf(current).startsWith(`${path}/`)
+}
+
+const baseURI = () => globalThis.document?.baseURI || 'http://localhost/'
+
+// The current page's path, without query, hash or trailing slash.
+export function currentPath() {
+  const url = getPage()?.url
+  return url ? pathOf(new URL(url, baseURI())) : null
+}
+
+// True when href is the current page or a page under it, for nav highlighting.
+// Pass { exact: true } to match the page itself only, as Link's aria-current does.
+export function isCurrent(href, { exact = false } = {}) {
+  return isCurrentLink(href, getPage()?.url, baseURI(), { prefix: !exact })
 }
 
 export function followLink(event, anchor, options, router) {

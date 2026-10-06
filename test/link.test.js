@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { after } from 'node:test'
-import { followLink, createLinkPrefetch, isCurrentLink } from '../src/link.js'
+import { followLink, createLinkPrefetch, isCurrentLink, isCurrent, currentPath } from '../src/link.js'
+import { setPage } from '../src/page.js'
 
 const originalHTMLElement = globalThis.HTMLElement
 globalThis.HTMLElement = class HTMLElement {}
@@ -199,4 +200,31 @@ test('isCurrentLink matches the current path, ignoring query, hash and trailing 
   assert.equal(isCurrentLink('#top', '/about', base), false)
   assert.equal(isCurrentLink('/students', null, base), false)
   assert.equal(isCurrentLink(null, '/students', base), false)
+})
+
+test('isCurrentLink with prefix also matches pages under href, but / only matches itself', () => {
+  const base = 'https://app.test/'
+  const prefix = { prefix: true }
+  assert.equal(isCurrentLink('/students', '/students/1', base, prefix), true)
+  assert.equal(isCurrentLink('/students/', '/students/1/edit?tab=a', base, prefix), true)
+  assert.equal(isCurrentLink('/students', '/students', base, prefix), true)
+  assert.equal(isCurrentLink('/students', '/students-archive', base, prefix), false)
+  assert.equal(isCurrentLink('/', '/students', base, prefix), false)
+  assert.equal(isCurrentLink('/', '/', base, prefix), true)
+})
+
+test('isCurrent and currentPath read the current page', () => {
+  setPage(null)
+  assert.equal(currentPath(), null)
+  assert.equal(isCurrent('/students'), false)
+  setPage({ url: '/students/1/?tab=notes#top' })
+  assert.equal(currentPath(), '/students/1')
+  assert.equal(isCurrent('/students'), true)
+  assert.equal(isCurrent('/students', { exact: true }), false)
+  assert.equal(isCurrent('/students/1', { exact: true }), true)
+  assert.equal(isCurrent('/'), false)
+  setPage({ url: '/' })
+  assert.equal(currentPath(), '/')
+  assert.equal(isCurrent('/'), true)
+  setPage(null)
 })

@@ -6,12 +6,12 @@
 #     -m https://raw.githubusercontent.com/milktop/inertia-imba/main/rails/template.rb
 #
 # Environment overrides:
-#   INERTIA_IMBA_REF=v0.1.4          adapter tag, branch or commit to install
+#   INERTIA_IMBA_REF=v0.1.5          adapter tag, branch or commit to install
 #   INERTIA_IMBA_PATH=/path/to/repo  link a local checkout via file: instead
-#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.4
+#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.5
 #   INERTIA_IMBA_AUTH=1|0            add authentication without prompting
 
-ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.4")
+ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.5")
 # Exact version: a caret range on an Imba pre-release also matches the nightly
 # builds, which lack imba/runtime.
 IMBA_VERSION = "2.0.0-alpha.253"
