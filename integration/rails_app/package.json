@@ -9,7 +9,7 @@
   "dependencies": {
     "@inertiajs/core": "^3.7.1",
     "@milktop/inertia-imba": "file:../..",
-    "imba": "^2.0.0-alpha.253"
+    "imba": "2.0.0-alpha.253"
   },
   "devDependencies": {
     "vite": "^7.1.5",
