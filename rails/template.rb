@@ -6,12 +6,15 @@
 #     -m https://raw.githubusercontent.com/milktop/inertia-imba/main/rails/template.rb
 #
 # Environment overrides:
-#   INERTIA_IMBA_REF=v0.1.3          adapter tag, branch or commit to install
+#   INERTIA_IMBA_REF=v0.1.4          adapter tag, branch or commit to install
 #   INERTIA_IMBA_PATH=/path/to/repo  link a local checkout via file: instead
-#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.3
+#   INERTIA_IMBA_SOURCE=<npm spec>   any other npm source, e.g. git+file:///repo#v0.1.4
 #   INERTIA_IMBA_AUTH=1|0            add authentication without prompting
 
-ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.3")
+ADAPTER_REF = ENV.fetch("INERTIA_IMBA_REF", "v0.1.4")
+# Exact version: a caret range on an Imba pre-release also matches the nightly
+# builds, which lack imba/runtime.
+IMBA_VERSION = "2.0.0-alpha.253"
 ADAPTER_PATH = ENV["INERTIA_IMBA_PATH"]
 ADAPTER_SOURCE = ENV["INERTIA_IMBA_SOURCE"] ||
   (ADAPTER_PATH ? "file:#{File.expand_path(ADAPTER_PATH)}" : "github:milktop/inertia-imba##{ADAPTER_REF}")
@@ -50,7 +53,8 @@ after_bundle do
   remove_file "vite.config.mts"
   remove_file "app/frontend/entrypoints/application.js"
 
-  run "npm install imba @inertiajs/core #{ADAPTER_SOURCE}"
+  run "npm install --save-exact imba@#{IMBA_VERSION}"
+  run "npm install @inertiajs/core #{ADAPTER_SOURCE}"
   create_file ".node-version", "#{`node --version`.strip.delete_prefix("v")}\n", force: true
 
   # bin/setup installs npm packages alongside gems.

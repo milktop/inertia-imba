@@ -46,7 +46,7 @@ the adapter from a GitHub tag, and sets up:
 - optionally, Rails 8 authentication with Imba login and password-reset pages
   (the template asks; set `INERTIA_IMBA_AUTH=1` or `0` to skip the prompt)
 
-Set `INERTIA_IMBA_REF=v0.1.3` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
+Set `INERTIA_IMBA_REF=v0.1.4` to choose another tag, `INERTIA_IMBA_PATH=/path/to/repo`
 to link a local checkout, or `INERTIA_IMBA_SOURCE` for any npm source. Without
 `--skip-javascript` it removes importmap, Turbo and Stimulus.
 
